@@ -1,3 +1,6 @@
+#Install pip
+python get-pip.py
+
 #apt-get
 sudo apt-get install python-opengl mesa-common-dev libglu1-mesa-dev git python-setuptools libusb-1.0-0-dev cmake python-zmq python-dev python-opencv python-scipy python-pip libav-tools build-essential libglew-dev nasm pkg-config wget libopencv-dev
 #Install ffmpeg
