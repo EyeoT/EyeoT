@@ -89,6 +89,6 @@ ENV/
 .ropeproject
 
 # Vagrant
-.vagrant
+.vagrant/
 
 yasm*
