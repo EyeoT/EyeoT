@@ -40,6 +40,7 @@ sudo apt-get install libglew-dev
 #Install packages with pip
 sudo pip install numexpr
 sudo pip install cython
+sudo pip install glfw
 sudo pip install psutil
 sudo pip install pyzmq
 sudo pip install msgpack_python
