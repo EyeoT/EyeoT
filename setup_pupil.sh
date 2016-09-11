@@ -18,13 +18,6 @@ sudo ln -s /usr/local/lib/libglfw.so.3 /usr/lib/libglfw.so.3
 cd ../
 sudo rm -r glfw
 
-#Install Turbojpeg
-wget -O libjpeg-turbo.tar.gz http://sourceforge.net/projects/libjpeg-turbo/files/1.4.2/libjpeg-turbo-1.4.2.tar.gz/download
-tar xvzf libjpeg-turbo.tar.gz
-cd libjpeg-turbo-1.4.2
-./configure --with-pic
-sudo make install
-
 #Install libuvc
 git clone https://github.com/pupil-labs/libuvc
 cd libuvc
@@ -32,9 +25,17 @@ mkdir build
 cd build
 cmake ..
 make && sudo make install
-#udev rules for running libuvc as a normal user
-echo 'SUBSYSTEM=="usb",  ENV{DEVTYPE}=="usb_device", GROUP="plugdev", MODE="0664"' | sudo tee /etc/udev/rules.d/10-libuvc.rules > /dev/null 
-sudo udevadm trigger
+
+#Install libjpeg-turbo
+sudo apt-get install nasm
+wget -O libjpeg-turbo-1.3.90.tar.gz http://sourceforge.net/projects/libjpeg-turbo/files/1.3.90%20%281.4%20beta1%29/libjpeg-turbo-1.3.90.tar.gz/download
+tar xvzf libjpeg-turbo-1.3.90.tar.gz
+cd libjpeg-turbo-1.3.90
+./configure --with-pic
+sudo make install
+
+#Install GLEW 
+sudo apt-get install libglew-dev
 
 #Install packages with pip
 sudo pip install numexpr
@@ -43,9 +44,9 @@ sudo pip install psutil
 sudo pip install pyzmq
 sudo pip install msgpack_python
 sudo pip install git+https://github.com/zeromq/pyre
-sudo pip install git+https://github.com/pupil-labs/PyAV
-sudo pip install git+https://github.com/pupil-labs/pyuvc
-sudo pip install git+https://github.com/pupil-labs/pyglui
+sudo -H pip install git+https://github.com/pupil-labs/PyAV
+sudo -H pip install git+https://github.com/pupil-labs/pyuvc
+sudo -H pip install git+https://github.com/pupil-labs/pyglui
 
 #Install 3D eye model dependencies
 sudo apt-get install libgoogle-glog-dev libatlas-base-dev libeigen3-dev
