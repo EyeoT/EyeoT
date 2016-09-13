@@ -52,7 +52,7 @@ Vagrant.configure("2") do |config|
       vb.customize ['modifyvm', :id, '--usb', 'on']
       vb.customize ["usbfilter", "add", "0",
                             "--target", :id,
-                            "--name", VB_NAME,
+                            "--name", "pupil_devices",
                             "--productid", "0x9230",
                             "--vendorid", "0x05a3"]
   

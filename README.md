@@ -12,4 +12,7 @@ vagrant up
 vagrant ssh
 sudo bash setup_pupil.sh
 ```
+
+If pupil device does not show up on vagrant machine, remove pupil from usb port and then reinsert.
+
 To use pre-commit hooks, download [pre-commit by Yelp](http://www.pre-commit.com).
