@@ -1,5 +1,7 @@
 # install pip from the get-pip.py
 python get-pip.py
+
+# install python dev tools
 apt-get install python-dev
 
 # getting the pupil capture debian file
