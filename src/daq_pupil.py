@@ -74,7 +74,7 @@ class DaqPupil:
         """ Starts subscription to the pupil topic
         """
         if self.status is STATUS_OPENED:
-            self.sub.subscribe(TOPIC_PUPIL)
+            self.sub.setsockopt(zmq.SUBSCRIBE, '')
 
             # Create poller to prevent errors when no data exists in msg buffer
             self.poller = zmq.Poller()
@@ -90,6 +90,7 @@ class DaqPupil:
                 n_samples by 2 array with the left pupil normal coordinates (theta and phi)            
         """
         pupil_direction = {RIGHT: [], LEFT:[]}
+        gaze_info = []
         if self.status is STATUS_RUNNING:
             while True:
                 # Get sockets that have been polled and have to timeout
@@ -99,7 +100,11 @@ class DaqPupil:
                     # Messages are sent in 2 pieces: topic and msg                    
                     topic, msg = self.sub.recv_multipart(zmq.DONTWAIT)
                     msg = loads(msg)   
-                    pupil_direction[topic[-1]].append([msg["theta"], msg["phi"]])                    
+                #    import pdb; pdb.set_trace()
+                    if topic == 'gaze':
+                        gaze_info.append(msg['gaze_point_3d'])
+                    else:
+                        pupil_direction[topic[-1]].append([msg["theta"], msg["phi"]])                    
                 else:                    
                     break
 
@@ -121,7 +126,7 @@ class DaqPupil:
         if pupil_direction[RIGHT].size == 0:
             return pupil_direction[RIGHT], pupil_direction[LEFT]
         else:
-            return pupil_direction[RIGHT]-self.offset[RIGHT], pupil_direction[LEFT]-self.offset[LEFT] 
+            return pupil_direction[RIGHT]-self.offset[RIGHT], pupil_direction[LEFT]-self.offset[LEFT], gaze_info
 
     def stop_acquisition(self): 
         """ Stops polling and subscription
@@ -178,20 +183,19 @@ if __name__ == "__main__":
 
     # Get data from buffer
     time.sleep(1)
-    pupil_right, pupil_left = pupil.get_data()
+    pupil_right, pupil_left, gaze_info = pupil.get_data()
 
     print "Number of samples in 1 second: %d" % (pupil_right.size/2)
 
     time.sleep(1)
-    pupil_right, pupil_left = pupil.get_data()
-
+    pupil_right, pupil_left, gaze_info = pupil.get_data()
     print "Number of samples in 1 second: %d" % (pupil_right.size/2)
 
     pupil.stop_acquisition()
     pupil.start_acquisition()
 
     time.sleep(1)
-    pupil_right, pupil_left = pupil.get_data()
+    pupil_right, pupil_left, gaze_info = pupil.get_data()
 
     print "Number of samples in 1 second: %d" % (pupil_right.size/2)
 
@@ -202,7 +206,7 @@ if __name__ == "__main__":
 
     time.sleep(1)
     start = time.time()
-    pupil_right, pupil_left = pupil.get_data()
+    pupil_right, pupil_left, gaze_info = pupil.get_data()
     stop = time.time()
 
     print "Number of samples in 1 second: %d" % (pupil_right.size/2)
@@ -214,5 +218,6 @@ if __name__ == "__main__":
     # Print data
     for right, left in zip(pupil_right, pupil_left):
         print right, left
+    print(gaze_info)
 
     print "Elapsed %f seconds in get_data call " % (stop-start)        
