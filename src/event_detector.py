@@ -20,13 +20,23 @@ class EventDetector:
         self.sub.setsockopt(zmq.SUBSCRIBE, '')
 
     def detect_blink(self):
-        topic, msg = self.sub.recv_multipart()
+        self.sub.setsockopt(zmq.SUBSCRIBE, 'pupil.')
+        stay = True
+        while stay:
+            topic, msg = self.sub.recv_multipart()
+            if msg['confidence'] == 0:
+                print('Blink')
+                stay = False
         # TODO: Detect blink
 
     def detect_fixation(self):
-        topic, msg = self.sub.recv_multipart()
+        stay = True
+        while stay:
+            topic, msg = self.sub.recv_multipart()
         # TODO: Detect fixation or blink
 
     def detect_controls(self):
-        topic, msg = self.sub.recv_multipart()
+        stay = True
+        while stay:
+            topic, msg = self.sub.recv_multipart()
         # TODO: Detection for controls
