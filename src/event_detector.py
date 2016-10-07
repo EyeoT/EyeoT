@@ -1,4 +1,5 @@
 import zmq
+from msgpack import loads
 
 
 class EventDetector:
@@ -24,6 +25,7 @@ class EventDetector:
         stay = True
         while stay:
             topic, msg = self.sub.recv_multipart()
+            msg = loads(msg)
             if msg['confidence'] == 0:
                 print('Blink')
                 stay = False
@@ -40,3 +42,7 @@ class EventDetector:
         while stay:
             topic, msg = self.sub.recv_multipart()
         # TODO: Detection for controls
+    
+if __name__ == '__main__':
+    detector = EventDetector()
+    detector.detect_blink()
