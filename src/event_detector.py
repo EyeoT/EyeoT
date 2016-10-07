@@ -31,14 +31,19 @@ class EventDetector:
                 print('Blink')
                 seconds_to_wait = 3
                 start_blink = time.time()
-                while (time.time() - start_blink) < seconds_to_wait:
+                conf_buffer = 0
+                while ((time.time() - start_blink) < seconds_to_wait):
                     topic, msg = self.sub.recv_multipart()
                     msg = loads(msg)
-                    if msg['confidence'] != 0:
-                        print('blink stopped')
-                        break
-                print('3 secs reached')
-                stay = False
+                    stay = False
+                    print(msg['confidence'])
+                    if msg['confidence'] > .2:
+                        topic, msg = self.sub.recv_multipart()
+                        msg = loads(msg)
+                        if msg['confidence'] > .2:
+                            print('blink stopped')
+                            stay = True
+                            break
 
     def detect_fixation(self):
         stay = True
