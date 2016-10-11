@@ -21,29 +21,30 @@ class EventDetector:
         self.sub.connect('tcp://{0}:{1}'.format(addr, sub_port))
         self.sub.setsockopt(zmq.SUBSCRIBE, '')
 
-    def detect_blink(self):
+    def detect_blink(self, seconds_to_wait):
         self.sub.setsockopt(zmq.SUBSCRIBE, 'pupil.')
         stay = True
         while stay:
             topic, msg = self.sub.recv_multipart()
             msg = loads(msg)
             if msg['confidence'] == 0:
+                conf_queue = [0, 0, 0, 0, 0]
                 print('Blink')
-                seconds_to_wait = 3
                 start_blink = time.time()
-                conf_buffer = 0
                 while ((time.time() - start_blink) < seconds_to_wait):
                     topic, msg = self.sub.recv_multipart()
                     msg = loads(msg)
+                    confidence = msg['confidence']
                     stay = False
-                    print(msg['confidence'])
-                    if msg['confidence'] > .2:
-                        topic, msg = self.sub.recv_multipart()
-                        msg = loads(msg)
-                        if msg['confidence'] > .2:
-                            print('blink stopped')
+                    print(confidence)
+                    conf_queue.pop(0)
+                    if confidence > .2:
+                        conf_queue.append(1)
+                        if sum(conf_queue) > 3:
                             stay = True
                             break
+                    else:
+                        conf_queue.append(0)
 
     def detect_fixation(self):
         stay = True
@@ -59,4 +60,4 @@ class EventDetector:
 
 if __name__ == '__main__':
     detector = EventDetector()
-    detector.detect_blink()
+    detector.detect_blink(3)
