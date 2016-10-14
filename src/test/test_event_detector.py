@@ -1,11 +1,13 @@
 from eventdetector import eventdetector
-import pytest
+import unittest
 import mock
 
-class TestEventDetector:
+class EventDetectorTestCase(unittest.TestCase):
 
-    def test_initialize(self):
-        #event_detector = eventdetector.EventDetector()
-        import pdb;pdb.set_trace()
-        print event_detector
+  def test_instantiation(self):
+    import ipdb; ipdb.set_trace()
+    event_detector = eventdetector.EventDetector()
 
+
+if __name__ == '__main__':
+  unittest.main()
