@@ -1,6 +1,7 @@
 import zmq
 from msgpack import loads
 import time
+import sys
 
 
 class EventDetector:
@@ -12,14 +13,19 @@ class EventDetector:
         """
         self.context = zmq.Context()
         self.req = self.context.socket(zmq.REQ)
-        self.req.connect('tcp://{0}:{1}'.format(addr, port))
-        # Ask for the subport
-        self.req.send('SUB_PORT')
-        sub_port = self.req.recv()
-        # Open a sub port to listen to the pupil
-        self.sub = self.context.socket(zmq.SUB)
-        self.sub.connect('tcp://{0}:{1}'.format(addr, sub_port))
-        self.sub.setsockopt(zmq.SUBSCRIBE, '')
+        self.req.RCVTIMEO = 1000  # milliseconds
+        try:
+            self.req.connect('tcp://{0}:{1}'.format(addr, port))
+            # Ask for the subport
+            self.req.send('SUB_PORT')
+            sub_port = self.req.recv()
+            # Open a sub port to listen to the pupil
+            self.sub = self.context.socket(zmq.SUB)
+            self.sub.connect('tcp://{0}:{1}'.format(addr, sub_port))
+            self.sub.setsockopt(zmq.SUBSCRIBE, '')
+        except zmq.error.Again:
+            print('Trouble with connection, is pupil connected?')
+            raise IOError('Pupil not connected')
 
     def detect_blink(self, seconds_to_wait=3):
         """ Detects when a blink happens for the specified number of seconds
@@ -67,5 +73,9 @@ class EventDetector:
         # TODO: Detection for controls
 
 if __name__ == '__main__':
-    detector = EventDetector()
+    try:
+        detector = EventDetector()
+    except IOError:
+        print('Pupil not connected, failure to create event detector')
+        sys.exit(1)
     detector.detect_blink(3)
