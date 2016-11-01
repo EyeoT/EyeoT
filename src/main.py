@@ -1,6 +1,6 @@
 import multiprocessing
 
-from event_detection import EventDetector
+from event_detector import EventDetector
 
 
 def initialize():
@@ -13,6 +13,8 @@ def initialize():
 
 
 def idle(event_detector):
+    """ Processes for idle state
+    """
     blink_proc = multiprocessing.Process(target=event_detector.detect_blink, args=(3,))
     blink_proc.start()
     blink_proc.join()
@@ -21,12 +23,16 @@ def idle(event_detector):
 
 
 def wake():
+    """ Process for wake state
+    """
     # TODO: Device control
     # TODO: DAQ_fixate (n seconds, mu, sigma) Machine Learning
     print('Wake mode')
 
 
 def all_systems_good():
+    """ Checks that all systems are running properly
+    """
     # TODO: Make sure things are working
     return True
 
@@ -37,5 +43,8 @@ if __name__ == "__main__":
     while True:
         idle(event_detector)
         print('Idle finished')
+        if not all_systems_good():
+            print('Somethings wrong')
+            break
         wake()
         print('Wake finished')
