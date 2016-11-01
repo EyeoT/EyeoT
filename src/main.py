@@ -1,5 +1,5 @@
 import multiprocessing
-import sys
+import os
 
 from event_detector import EventDetector
 
@@ -12,8 +12,6 @@ def initialize():
     try:
         event_detector = EventDetector()
     except IOError as e:
-        import pdb
-        pdb.set_trace()
         print(e)
         raise
     return event_detector
@@ -50,7 +48,7 @@ if __name__ == "__main__":
         event_detector = initialize()
     except IOError:
         print('Setup failed, quitting program')
-        sys.exit(1)
+        os._exit(1)
 
     while True:
         idle(event_detector)

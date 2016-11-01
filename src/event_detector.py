@@ -1,7 +1,7 @@
 import zmq
 from msgpack import loads
 import time
-import sys
+import os
 
 
 class EventDetector:
@@ -77,5 +77,5 @@ if __name__ == '__main__':
         detector = EventDetector()
     except IOError:
         print('Pupil not connected, failure to create event detector')
-        sys.exit(1)
+        os._exit(1)
     detector.detect_blink(3)
