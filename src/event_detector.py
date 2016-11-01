@@ -21,7 +21,7 @@ class EventDetector:
         self.sub.connect('tcp://{0}:{1}'.format(addr, sub_port))
         self.sub.setsockopt(zmq.SUBSCRIBE, '')
 
-    def detect_blink(self, seconds_to_wait):
+    def detect_blink(self, seconds_to_wait=3):
         """ Detects when a blink happens for the specified number of seconds
         """
         self.sub.setsockopt(zmq.SUBSCRIBE, 'pupil.')
