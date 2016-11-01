@@ -1,4 +1,5 @@
 import multiprocessing
+import os
 
 from event_detector import EventDetector
 
@@ -8,14 +9,19 @@ def initialize():
     """
     # TODO: start audio - thread?
     # TODO: start ble - get list of nearby shit
-    event_detector = EventDetector()
+    try:
+        event_detector = EventDetector()
+    except IOError as e:
+        print(e)
+        raise
     return event_detector
 
 
 def idle(event_detector):
     """ Processes for idle state
     """
-    blink_proc = multiprocessing.Process(target=event_detector.detect_blink, args=(3,))
+    blink_proc = multiprocessing.Process(
+        target=event_detector.detect_blink, args=(3,))
     blink_proc.start()
     blink_proc.join()
     print('Blink Detected')
@@ -38,7 +44,11 @@ def all_systems_good():
 
 
 if __name__ == "__main__":
-    event_detector = initialize()
+    try:
+        event_detector = initialize()
+    except IOError:
+        print('Setup failed, quitting program')
+        os._exit(1)
 
     while True:
         idle(event_detector)
