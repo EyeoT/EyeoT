@@ -1,6 +1,7 @@
 import zmq
 from msgpack import loads
 import time
+import ipdb
 import os
 
 
@@ -42,7 +43,12 @@ class EventDetector:
         # While we are still looking for the blink
         while stay:
             raw_recv = self.sub.recv_multipart()
+            while "pupil" not in raw_recv[0]:
+                print raw_recv[0]
+                raw_recv = self.sub.recv_multipart()
+
             msg = loads(raw_recv[1])
+
             # When the confidence drops below .5, we assume the
             # eyes are closed and a blink has begun
             if msg['confidence'] < .5:
@@ -72,6 +78,7 @@ class EventDetector:
         while stay:
             raw_recv = self.sub.recv_multipart()
             msg = loads(raw_recv[1])
+            ipdb.set_trace()
         # TODO: Detect fixation or blink
 
     def detect_controls(self):
