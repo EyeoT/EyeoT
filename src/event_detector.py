@@ -86,7 +86,10 @@ class EventDetector:
     def grab_frames(self, rec_for=1):
         self.sub.setsockopt(zmq.SUBSCRIBE, 'frame.world')
         start_time = time.time()
-        file_path = '~/pupil_frames/{}'.format(start_time)
+        start_time_str = '{0}'.format(start_time)
+        file_path = 'pupil_frames/{}'.format(start_time_str.split('.')[0])
+        if not os.path.exists(file_path):
+            os.makedirs(file_path)
         file_name = 'frame{0}.{1}'
         frame_number = 0
         while time.time() - start_time < rec_for:
