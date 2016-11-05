@@ -72,10 +72,21 @@ class EventDetector:
             topic, msg = self.sub.recv_multipart()
         # TODO: Detection for controls
 
+    def grab_frames(self):
+        self.sub.setsockopt(zmq.SUBSCRIBE, 'frame.world')
+        topic, msg = self.sub.recv_multipart()
+        while topic is not 'frame':
+            topic, msg = self.sub.recv_multipart()
+        frame_format = msg['format']
+        data_blob = msg['__raw_data__']
+        frame_file = open('frame.{0}'.format(frame_format), 'w')
+        frame_file.write(data_blob)
+
+
 if __name__ == '__main__':
     try:
         detector = EventDetector()
     except IOError:
         print('Pupil not connected, failure to create event detector')
         os._exit(1)
-    detector.detect_blink(3)
+    detector.grab_frames()
