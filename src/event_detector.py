@@ -74,11 +74,12 @@ class EventDetector:
 
     def grab_frames(self):
         self.sub.setsockopt(zmq.SUBSCRIBE, 'frame.world')
-        topic, msg = self.sub.recv_multipart()
-        while topic is not 'frame':
+        topic, msg, data_blob = self.sub.recv_multipart()
+        msg = loads(msg)
+        import pdb; pdb.set_trace()
+        while topic != 'frame.world':
             topic, msg = self.sub.recv_multipart()
         frame_format = msg['format']
-        data_blob = msg['__raw_data__']
         frame_file = open('frame.{0}'.format(frame_format), 'w')
         frame_file.write(data_blob)
 
