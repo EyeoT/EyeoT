@@ -83,7 +83,26 @@ class EventDetector:
             print(msg)
         # TODO: Detection for controls
 
-    def grab_frames(self, rec_for=1):
+    def grab_frames(self, num_frames=1):
+        self.sub.setsockopt(zmq.SUBSCRIBE, 'frame.world')
+        start_time_str = '{0}'.format(time.time())
+        file_path = 'pupil_frames/{}'.format(start_time_str.split('.')[0])
+        if not os.path.exists(file_path):
+            os.makedirs(file_path)
+        file_name = 'frame{0}.{1}'
+        frame_number = 0
+        while frame_number < num_frames:
+            raw_recv = self.sub.recv_multipart()
+            while raw_recv[0] != 'frame.world':
+                raw_recv = self.sub.recv_multipart()
+            msg = loads(raw_recv[1])
+            frame_format = msg['format']
+            this_file_name = file_name.format(frame_number, frame_format)
+            frame_file = open(os.path.join(file_path, this_file_name), 'w')
+            frame_file.write(raw_recv[2])
+            frame_number += 1
+
+    def grab_frames_seconds(self, num_secs=1):
         self.sub.setsockopt(zmq.SUBSCRIBE, 'frame.world')
         start_time = time.time()
         start_time_str = '{0}'.format(start_time)
@@ -92,7 +111,7 @@ class EventDetector:
             os.makedirs(file_path)
         file_name = 'frame{0}.{1}'
         frame_number = 0
-        while time.time() - start_time < rec_for:
+        while time.time() - start_time < num_secs:
             raw_recv = self.sub.recv_multipart()
             while raw_recv[0] != 'frame.world':
                 raw_recv = self.sub.recv_multipart()
@@ -111,3 +130,4 @@ if __name__ == '__main__':
         print('Pupil not connected, failure to create event detector')
         os._exit(1)
     detector.grab_frames()
+    detector.grab_frames_seconds()
