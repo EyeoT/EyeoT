@@ -6,6 +6,13 @@ import os
 
 class EventDetector:
     """ Detects event based on the pupil
+        
+        NOTE:
+        Each raw datum received from the pupil is an array.
+        The variable name is raw_recv
+        The first element is the topic
+        The second element is the message
+        and the third element depends on the topic and may not exist
     """
 
     def __init__(self, addr='127.0.0.1', port='50020'):
