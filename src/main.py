@@ -1,7 +1,7 @@
 import multiprocessing
 import os
 
-from event_detector import EventDetector
+from event_stub import EventDetector
 
 
 def initialize():
@@ -25,15 +25,23 @@ def idle(event_detector):
     blink_proc.start()
     blink_proc.join()
     print('Blink Detected')
-    # TODO: Bluetooth callback
+    return 'active'
 
 
-def wake():
-    """ Process for wake state
+def active():
+    """ Process for active state
     """
     # TODO: Device control
     # TODO: DAQ_fixate (n seconds, mu, sigma) Machine Learning
-    print('Wake mode')
+    print('Active mode')
+    return 'idle'
+
+
+def control():
+    """ Processes for control state
+    """
+    print('control mode')
+    return 'active'
 
 
 def all_systems_good():
@@ -43,6 +51,17 @@ def all_systems_good():
     return True
 
 
+def start_state(state, event_detector):
+    if state == 'idle':
+        return idle(event_detector)
+    elif state == 'active':
+        return active()
+    elif state == 'control':
+        return control()
+    else:
+        print('AHHHHH')
+
+
 if __name__ == "__main__":
     try:
         event_detector = initialize()
@@ -50,11 +69,19 @@ if __name__ == "__main__":
         print('Setup failed, quitting program')
         os._exit(1)
 
+    next_state = 'idle'
     while True:
+        next_state = start_state(next_state, event_detector)
+
+
+"""
         idle(event_detector)
         print('Idle finished')
         if not all_systems_good():
             print('Somethings wrong')
             break
-        wake()
-        print('Wake finished')
+        next_state = active(event_detector)
+        print('Active mode finished')
+        if next_state == 'control':
+            control(event_detector)
+            """
