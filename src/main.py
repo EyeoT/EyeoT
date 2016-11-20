@@ -1,7 +1,7 @@
 import multiprocessing
 import os
 
-from event_detector import EventDetector
+from event_stub import EventDetector
 
 
 def initialize():
