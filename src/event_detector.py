@@ -67,13 +67,25 @@ class EventDetector:
                     else:
                         conf_queue.append(0)
 
-    def detect_fixation(self):
+    def detect_gaze(self, num_tries=3, queue=None):
+        tries = 0
+        while tries < num_tries:
+            color = self.get_box_color()
+            if color is not None:
+                if queue:
+                    queue.put(color)
+                return color
+        if queue:
+            queue.put(color)
+        return None
+
+    def get_box_color(self):
+        # TODO: ML project
         stay = True
         while stay:
             raw_recv = self.sub.recv_multipart()
             msg = loads(raw_recv[1])
             print(msg)
-        # TODO: Detect fixation or blink
 
     def detect_controls(self):
         stay = True
