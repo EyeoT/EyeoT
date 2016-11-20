@@ -1,7 +1,7 @@
 import multiprocessing
 import os
 
-from event_stub import EventDetector
+from event_detector import EventDetector
 
 
 def initialize():
@@ -28,19 +28,35 @@ def idle(event_detector):
     return 'active'
 
 
-def active():
+def active(event_detector):
     """ Process for active state
     """
-    # TODO: Device control
-    # TODO: DAQ_fixate (n seconds, mu, sigma) Machine Learning
     print('Active mode')
-    return 'idle'
+    color_queue = multiprocessing.Queue()
+    blink_proc = multiprocessing.Process(
+        target=event_detector.detect_blink, args=(3,))
+    box_proc = multiprocessing.Process(
+        target=event_detector.detect_gaze, args=(3, color_queue))
+    blink_proc.start()
+    box_proc.start()
+    while True:
+        if not box_proc.is_alive():
+            blink_proc.terminate()
+            print('box first')
+            print(color_queue.get())
+            return 'control'
+        if not blink_proc.is_alive():
+            box_proc.terminate()
+            print('blink first')
+            return 'idle'
 
 
-def control():
+def control(event_detector):
     """ Processes for control state
     """
     print('control mode')
+    control = event_detector.detect_controls()
+    print(control)
     return 'active'
 
 
@@ -55,11 +71,11 @@ def start_state(state, event_detector):
     if state == 'idle':
         return idle(event_detector)
     elif state == 'active':
-        return active()
+        return active(event_detector)
     elif state == 'control':
-        return control()
+        return control(event_detector)
     else:
-        print('AHHHHH')
+        raise ValueError(state)
 
 
 if __name__ == "__main__":
@@ -71,17 +87,8 @@ if __name__ == "__main__":
 
     next_state = 'idle'
     while True:
-        next_state = start_state(next_state, event_detector)
-
-
-"""
-        idle(event_detector)
-        print('Idle finished')
-        if not all_systems_good():
-            print('Somethings wrong')
+        try:
+            next_state = start_state(next_state, event_detector)
+        except ValueError as e:
+            print('Bad state given: {0}'.format(e))
             break
-        next_state = active(event_detector)
-        print('Active mode finished')
-        if next_state == 'control':
-            control(event_detector)
-            """
