@@ -1,7 +1,7 @@
 import multiprocessing
 import os
 
-from event_detector import EventDetector
+from event_stub import EventDetector
 
 
 def initialize():
@@ -25,15 +25,39 @@ def idle(event_detector):
     blink_proc.start()
     blink_proc.join()
     print('Blink Detected')
-    # TODO: Bluetooth callback
+    return 'active'
 
 
-def wake():
-    """ Process for wake state
+def active(event_detector):
+    """ Process for active state
     """
-    # TODO: Device control
-    # TODO: DAQ_fixate (n seconds, mu, sigma) Machine Learning
-    print('Wake mode')
+    print('Active mode')
+    color_queue = multiprocessing.Queue()
+    blink_proc = multiprocessing.Process(
+        target=event_detector.detect_blink, args=(3,))
+    box_proc = multiprocessing.Process(
+        target=event_detector.detect_gaze, args=(3, color_queue))
+    blink_proc.start()
+    box_proc.start()
+    while True:
+        if not box_proc.is_alive():
+            blink_proc.terminate()
+            print('box first')
+            print(color_queue.get())
+            return 'control'
+        if not blink_proc.is_alive():
+            box_proc.terminate()
+            print('blink first')
+            return 'idle'
+
+
+def control(event_detector):
+    """ Processes for control state
+    """
+    print('control mode')
+    control = event_detector.detect_controls()
+    print(control)
+    return 'active'
 
 
 def all_systems_good():
@@ -43,6 +67,17 @@ def all_systems_good():
     return True
 
 
+def start_state(state, event_detector):
+    if state == 'idle':
+        return idle(event_detector)
+    elif state == 'active':
+        return active(event_detector)
+    elif state == 'control':
+        return control(event_detector)
+    else:
+        raise ValueError(state)
+
+
 if __name__ == "__main__":
     try:
         event_detector = initialize()
@@ -50,11 +85,10 @@ if __name__ == "__main__":
         print('Setup failed, quitting program')
         os._exit(1)
 
+    next_state = 'idle'
     while True:
-        idle(event_detector)
-        print('Idle finished')
-        if not all_systems_good():
-            print('Somethings wrong')
+        try:
+            next_state = start_state(next_state, event_detector)
+        except ValueError as e:
+            print('Bad state given: {0}'.format(e))
             break
-        wake()
-        print('Wake finished')
