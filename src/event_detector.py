@@ -88,11 +88,36 @@ class EventDetector:
             print(msg)
 
     def detect_controls(self):
-        stay = True
-        while stay:
+        #stay = True
+        #while stay:
+        #TODO Change this to 3 seconds
+        seconds_to_wait = 3
+        start_detection = time.time()  # Time when the blink began
+        while ((time.time() - start_detection) < seconds_to_wait):
             raw_recv = self.sub.recv_multipart()
             msg = loads(raw_recv[1])
-            print(msg)
+            if "gaze" in raw_recv[0]:
+                msg = loads(raw_recv[1])
+                base_data = msg['base_data']
+                right_eye_deltas = []
+                left_eye_deltas = []
+                for idx, datum in enumerate(base_data):
+                    x_pos = float(datum['norm_pos'][0])
+                    if idx % 2 == 0 and idx > 0:
+                        right_eye_deltas.append(x_pos - prev_x_right)
+                    elif idx % 2 == 1 and idx > 1:
+                        left_eye_deltas.append(x_pos - prev_x_left)
+
+                    if idx % 2 == 0:
+                        prev_x_right = x_pos
+                    else:
+                        prev_x_left = x_pos
+
+                    print("Right:\n")
+                    print(right_eye_deltas)
+                    print("Left: \n")
+                    print(left_eye_deltas)
+#            print(msg)
         # TODO: Detection for controls
 
     def grab_frames(self, num_frames=1):
