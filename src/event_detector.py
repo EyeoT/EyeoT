@@ -1,6 +1,7 @@
 import zmq
 from msgpack import loads
 import time
+import ipdb
 import os
 
 
@@ -92,32 +93,46 @@ class EventDetector:
         #while stay:
         #TODO Change this to 3 seconds
         seconds_to_wait = 3
-        start_detection = time.time()  # Time when the blink began
+        right_eye_deltas = []
+        left_eye_deltas = []
+        gaze_buffer = []
+        start_detection = time.time()  # Time when the detection started
         while ((time.time() - start_detection) < seconds_to_wait):
             raw_recv = self.sub.recv_multipart()
             msg = loads(raw_recv[1])
-            if "gaze" in raw_recv[0]:
+    #        print ("New iteration")
+            if "gaze" in raw_recv[0] and msg['confidence'] > 0.8:
                 msg = loads(raw_recv[1])
                 base_data = msg['base_data']
-                right_eye_deltas = []
-                left_eye_deltas = []
-                print msg
                 for idx, datum in enumerate(base_data):
                     x_pos = float(datum['norm_pos'][0])
-                    if idx % 2 == 0 and idx > 0:
+                    if idx % 2 == 0 and len(gaze_buffer) > 0:
                         right_eye_deltas.append(x_pos - prev_x_right)
-                    elif idx % 2 == 1 and idx > 1:
+                    elif idx % 2 == 1 and len(gaze_buffer) > 1:
                         left_eye_deltas.append(x_pos - prev_x_left)
+
 
                     if idx % 2 == 0:
                         prev_x_right = x_pos
                     else:
                         prev_x_left = x_pos
 
-#                    print("Right:\n")
-#                    print(right_eye_deltas)
-#                    print("Left: \n")
-#                    print(left_eye_deltas)
+                    gaze_buffer.append(x_pos)
+
+            if len(gaze_buffer) >= 500:
+                length = len(gaze_buffer)
+                start_index = length - 500 + 1
+                gaze_buffer = gaze_buffer[start_index:length-1]
+                right_eye_deltas = right_eye_deltas[start_index:length-1]
+                left_eye_deltas = left_eye_deltas[start_index:length-1]
+
+
+            print right_eye_deltas
+
+               
+
+                    #print("Gaze buffer\n")
+                    #print(gaze_buffer)
 #            print(msg)
         # TODO: Detection for controls
 
