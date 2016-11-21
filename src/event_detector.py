@@ -101,6 +101,7 @@ class EventDetector:
                 base_data = msg['base_data']
                 right_eye_deltas = []
                 left_eye_deltas = []
+                print msg
                 for idx, datum in enumerate(base_data):
                     x_pos = float(datum['norm_pos'][0])
                     if idx % 2 == 0 and idx > 0:
@@ -113,10 +114,10 @@ class EventDetector:
                     else:
                         prev_x_left = x_pos
 
-                    print("Right:\n")
-                    print(right_eye_deltas)
-                    print("Left: \n")
-                    print(left_eye_deltas)
+#                    print("Right:\n")
+#                    print(right_eye_deltas)
+#                    print("Left: \n")
+#                    print(left_eye_deltas)
 #            print(msg)
         # TODO: Detection for controls
 
@@ -166,5 +167,6 @@ if __name__ == '__main__':
     except IOError:
         print('Pupil not connected, failure to create event detector')
         os._exit(1)
-    detector.grab_frames()
-    detector.grab_frames_seconds()
+    #detector.grab_frames()
+    #detector.grab_frames_seconds()
+    detector.detect_controls()
