@@ -89,7 +89,7 @@ class EventDetector:
             print(msg)
 
     def detect_controls(self):
-        #stay = True
+        stay = True
         #while stay:
         #TODO Change this to 3 seconds
         seconds_to_wait = 3
@@ -97,7 +97,8 @@ class EventDetector:
         left_eye_deltas = []
         gaze_buffer = []
         start_detection = time.time()  # Time when the detection started
-        while ((time.time() - start_detection) < seconds_to_wait):
+    #    while ((time.time() - start_detection) < seconds_to_wait):
+        while stay:
             raw_recv = self.sub.recv_multipart()
             msg = loads(raw_recv[1])
     #        print ("New iteration")
@@ -125,15 +126,13 @@ class EventDetector:
                 gaze_buffer = gaze_buffer[start_index:length-1]
                 right_eye_deltas = right_eye_deltas[start_index:length-1]
                 left_eye_deltas = left_eye_deltas[start_index:length-1]
+                right_vote = [1 if delta > 0 else -1 for delta in right_eye_deltas]
+                left_vote = [1 if delta > 0 else -1 for delta in left_eye_deltas]
+
+                #ipdb.set_trace()
 
 
-            print right_eye_deltas
-
-               
-
-                    #print("Gaze buffer\n")
-                    #print(gaze_buffer)
-#            print(msg)
+    #        print right_eye_deltas
         # TODO: Detection for controls
 
     def grab_frames(self, num_frames=1):
