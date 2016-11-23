@@ -93,16 +93,18 @@ class EventDetector:
         #while stay:
         #TODO Change this to 3 seconds
         seconds_to_wait = 3
-        right_eye_sum = 0
-        left_eye_sum = 0
-        count = 0
+        right_eye_sum = 0.0
+        left_eye_sum = 0.0
+        count = 0.0
         means = []
         start_detection = time.time()  # Time when the detection started
     #    while ((time.time() - start_detection) < seconds_to_wait):
         while stay:
             raw_recv = self.sub.recv_multipart()
             msg = loads(raw_recv[1])
+            print(len(means))
             if "gaze" in raw_recv[0] and msg['confidence'] > 0.8:
+                vote = 0
                 msg = loads(raw_recv[1])
                 base_data = msg['base_data']
                 for idx, datum in enumerate(base_data):
@@ -114,18 +116,31 @@ class EventDetector:
                     elif idx % 2 == 1:
                         right_eye_sum += x_pos
                     
-                    if count == 8:
+                    if count == 8.0:
                         right_mean = right_eye_sum / count
                         left_mean = right_eye_sum / count
                         means.append([left_mean, right_mean])
-                        right_eye_sum = 0
-                        left_eye_sum = 0
-                        count = 0
+                        right_eye_sum = 0.0
+                        left_eye_sum = 0.0
+                        count = 0.0
 
+            for idx, mean in enumerate(means):
+                left_diff = mean[0] - means[idx-1][0]
+                right_diff = mean[1] - means[idx-1][1]
 
+                if left_diff > 0 and right_diff > 0:
+                    vote += 1
+                elif left_diff > 0 and right_diff < 0:
+                    vote += 0
+                elif left_diff < 0 and right_diff > 0:
+                    vote += 0
+                elif left_diff < 0 and right_diff < 0:
+                    vote -= 1
 
+                
+                print float(vote/len(means))
+                    
 
-                #ipdb.set_trace()
 
 
     #        print right_eye_deltas
