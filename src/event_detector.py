@@ -93,41 +93,37 @@ class EventDetector:
         #while stay:
         #TODO Change this to 3 seconds
         seconds_to_wait = 3
-        right_eye_deltas = []
-        left_eye_deltas = []
-        gaze_buffer = []
+        right_eye_sum = 0
+        left_eye_sum = 0
+        count = 0
+        means = []
         start_detection = time.time()  # Time when the detection started
     #    while ((time.time() - start_detection) < seconds_to_wait):
         while stay:
             raw_recv = self.sub.recv_multipart()
             msg = loads(raw_recv[1])
-    #        print ("New iteration")
             if "gaze" in raw_recv[0] and msg['confidence'] > 0.8:
                 msg = loads(raw_recv[1])
                 base_data = msg['base_data']
                 for idx, datum in enumerate(base_data):
                     x_pos = float(datum['norm_pos'][0])
-                    if idx % 2 == 0 and len(gaze_buffer) > 0:
-                        right_eye_deltas.append(x_pos - prev_x_right)
-                    elif idx % 2 == 1 and len(gaze_buffer) > 1:
-                        left_eye_deltas.append(x_pos - prev_x_left)
-
+                    count += 1.0
 
                     if idx % 2 == 0:
-                        prev_x_right = x_pos
-                    else:
-                        prev_x_left = x_pos
+                        right_eye_sum += x_pos
+                    elif idx % 2 == 1:
+                        right_eye_sum += x_pos
+                    
+                    if count == 8:
+                        right_mean = right_eye_sum / count
+                        left_mean = right_eye_sum / count
+                        means.append([left_mean, right_mean])
+                        right_eye_sum = 0
+                        left_eye_sum = 0
+                        count = 0
 
-                    gaze_buffer.append(x_pos)
 
-            if len(gaze_buffer) >= 500:
-                length = len(gaze_buffer)
-                start_index = length - 500 + 1
-                gaze_buffer = gaze_buffer[start_index:length-1]
-                right_eye_deltas = right_eye_deltas[start_index:length-1]
-                left_eye_deltas = left_eye_deltas[start_index:length-1]
-                right_vote = [1 if delta > 0 else -1 for delta in right_eye_deltas]
-                left_vote = [1 if delta > 0 else -1 for delta in left_eye_deltas]
+
 
                 #ipdb.set_trace()
 
