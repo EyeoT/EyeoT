@@ -95,16 +95,16 @@ class EventDetector:
         seconds_to_wait = 3
         right_eye_sum = 0.0
         left_eye_sum = 0.0
-        count = 0.0
+        count = 0
+        conf_tol = 0.5
         means = []
         start_detection = time.time()  # Time when the detection started
     #    while ((time.time() - start_detection) < seconds_to_wait):
         while stay:
             raw_recv = self.sub.recv_multipart()
-            msg = loads(raw_recv[1])
-            print(len(means))
-            if "gaze" in raw_recv[0] and msg['confidence'] > 0.8:
-                vote = 0
+            if "gaze" in raw_recv[0]:
+              msg = loads(raw_recv[1])
+              if msg['confidence'] > conf_tol:
                 msg = loads(raw_recv[1])
                 base_data = msg['base_data']
                 for idx, datum in enumerate(base_data):
@@ -116,14 +116,21 @@ class EventDetector:
                     elif idx % 2 == 1:
                         right_eye_sum += x_pos
                     
-                    if count == 8.0:
+                    if count == 8:
                         right_mean = right_eye_sum / count
                         left_mean = right_eye_sum / count
                         means.append([left_mean, right_mean])
                         right_eye_sum = 0.0
                         left_eye_sum = 0.0
-                        count = 0.0
+                        count = 0
 
+            if len(means) > 30:
+                length = len(means)
+                len_diff = length - 30
+                tmp_means = means
+                means = tmp_means[len_diff:]
+
+            vote = 0
             for idx, mean in enumerate(means):
                 left_diff = mean[0] - means[idx-1][0]
                 right_diff = mean[1] - means[idx-1][1]
@@ -186,6 +193,15 @@ class EventDetector:
             frame_number += 1
 
 
+    def test_gaze(self):
+        while True:
+            raw_recv = self.sub.recv_multipart()
+            msg = loads(raw_recv[1])
+            print(raw_recv[0])
+            import pdb; pdb.set_trace()
+
+
+
 if __name__ == '__main__':
     try:
         detector = EventDetector()
@@ -194,4 +210,5 @@ if __name__ == '__main__':
         os._exit(1)
     #detector.grab_frames()
     #detector.grab_frames_seconds()
-    detector.detect_controls()
+    #detector.detect_controls()
+    detector.test_gaze()
