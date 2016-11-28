@@ -3,6 +3,7 @@ from msgpack import loads
 import time
 import ipdb
 import os
+from pykalman import KalmanFilter
 
 
 class EventDetector:
@@ -89,9 +90,6 @@ class EventDetector:
             print(msg)
 
     def detect_controls(self):
-        stay = True
-        #while stay:
-        #TODO Change this to 3 seconds
         conf_tol = 0.9
         start_detection = time.time()  # Time when the detection started
         reaction_ms = 200
@@ -106,9 +104,28 @@ class EventDetector:
                         x_position = datum['norm_pos'][0]
                         initial_x_pos.append(x_position)
 
-        #ipdb.set_trace()
-        initial_mean = sum(initial_x_pos)/len(initial_x_pos)
-        print initial_mean
+        initial_mean = sum(initial_x_pos)/float(len(initial_x_pos))
+        kf = KalmanFilter(initial_state_mean=initial_mean, n_dim_obs=1)
+        stay = True
+        count = 0
+        while stay:
+            raw_recv = self.sub.recv_multipart()
+            if "gaze" in raw_recv[0]:
+                msg = loads(raw_recv[1])
+                if msg['confidence'] > conf_tol:
+                    base_data = msg['base_data']
+                    ipdb.set_trace()
+                    if count == 0:
+                        x_positions = [datum['norm_pos'][0] for datum in base_data]
+                        (filtered_state_means, filtered_state_covariances) = kf.filter(x_positions)
+                    else:
+                        for datum in base_data:
+                            (filtered_state_means, filtered_state_covariances) = kf.filter_update(filtered_state_means[-1], filtered_state_covariances[-1], datum['norm_pos'][0])
+
+
+                    count += 1
+
+
 
     def grab_frames(self, num_frames=1):
         self.sub.setsockopt(zmq.SUBSCRIBE, 'frame.world')
