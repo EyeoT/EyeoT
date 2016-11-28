@@ -2,7 +2,6 @@ import zmq
 from msgpack import loads
 import time
 import os
-import ipdb
 from pykalman import KalmanFilter
 
 
@@ -180,23 +179,9 @@ class EventDetector:
             frame_number += 1
 
 
-    def test_gaze(self):
-        while True:
-            raw_recv = self.sub.recv_multipart()
-            msg = loads(raw_recv[1])
-            print(raw_recv[0])
-            import pdb; pdb.set_trace()
-
-
-
 if __name__ == '__main__':
     try:
         detector = EventDetector()
     except IOError:
         print('Pupil not connected, failure to create event detector')
         os._exit(1)
-    #detector.grab_frames()
-    #detector.grab_frames_seconds()
-    #detector.detect_controls()
-    #detector.test_gaze()
-    #detector.detect_fixation()
