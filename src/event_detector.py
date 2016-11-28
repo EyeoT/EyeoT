@@ -2,6 +2,7 @@ import zmq
 from msgpack import loads
 import time
 import os
+import ipdb
 from pykalman import KalmanFilter
 
 
@@ -95,8 +96,15 @@ class EventDetector:
                                 first_focus = time.time()
                             print('Focused {0}'.format(fixation_count))
                             fixation_count += 1
-                            gaze_buffer_x = []
-                            gaze_buffer_y = []
+                            if fixation_count <= 3:
+                                gaze_buffer_x = []
+                                gaze_buffer_y = []
+        x_fixation_pos = sum(gaze_buffer_x)/float(len(gaze_buffer_x))
+        y_fixation_pos = sum(gaze_buffer_y)/float(len(gaze_buffer_y))
+        return [x_fixation_pos, y_fixation_pos]
+
+
+        ipdb.set_trace()
 
     def detect_gaze(self, num_tries=3, queue=None):
         tries = 0
@@ -119,65 +127,10 @@ class EventDetector:
             print(msg)
 
     def detect_controls(self):
-        conf_tol = 0.9
-        reaction_ms = 200
-        initial_x_pos = []
-        start_detection = time.time()  # Time when the detection started
-
-        # Take the mean of the x position for 200 miliseconds
-        while ((time.time() - start_detection)*1000 < reaction_ms):
+        stay = True
+        while stay:
             raw_recv = self.sub.recv_multipart()
-            if "gaze" in raw_recv[0]:
-                msg = loads(raw_recv[1])
-                if msg['confidence'] > conf_tol:
-                    base_data = msg['base_data']
-                    for datum in base_data:
-                        x_position = datum['norm_pos'][0]
-                        initial_x_pos.append(x_position)
-
-        #TODO account for the case when no data has been appended to the initial_x_pos
-        #NOTE: sometimes there aren't any datapoints have more than a 90% confidence so the initial mean can't be calculated
-        initial_mean = sum(initial_x_pos)/float(len(initial_x_pos))
-
-        # Initialize Kalmann filter with the calculated mean and for 1 dimension
-        kf = KalmanFilter(initial_state_mean=initial_mean, n_dim_obs=1)
-
-        # Calculate the difference the user's gaze needs to exceed on both the LHS and RHS
-        # NOTE: the percent_threshold needs to be played with
-        percent_threshold = 0.5
-        right_diff = percent_threshold * (1-initial_mean)
-        left_diff = percent_threshold * initial_mean
-
-        current_diff = 0
-        count = 0
-        while current_diff < right_diff:
-            raw_recv = self.sub.recv_multipart()
-            if "gaze" in raw_recv[0]:
-                msg = loads(raw_recv[1])
-                if msg['confidence'] > conf_tol:
-                    base_data = msg['base_data']
-                    
-                    # If no points have been used in the Kalmann filter, then apply the filter to all of the x position data points
-                    if count == 0:
-
-                        x_positions = [datum['norm_pos'][0] for datum in base_data]
-                        (filtered_state_means, filtered_state_covariances) = kf.filter(x_positions)
-
-                    # Otherwise, iterate through all of the "Base data" and update the Kalmann filter with each point and the most recent mean and covariance
-                    else:
-                        for datum in base_data:
-                            (filtered_state_means, filtered_state_covariances) = kf.filter_update(filtered_state_means[-1], filtered_state_covariances[-1], datum['norm_pos'][0])
-
-                    # filtered_state_means[0] can either be a float or a Masked Array for some reason
-                    if type(filtered_state_means[0]).__name__ == "float64":
-                        current_mean = filtered_state_means[0]
-                    else:
-                        current_mean = filtered_state_means[0][0]
-
-                    # Take the diff between the current mean and the initial mean and increment the count
-                    current_diff = initial_mean - current_mean
-                    count += 1
-
+            msg = loads(raw_recv[1])
 
     def grab_frames(self, num_frames=1):
         self.sub.setsockopt(zmq.SUBSCRIBE, 'frame.world')
@@ -236,6 +189,6 @@ if __name__ == '__main__':
         os._exit(1)
     #detector.grab_frames()
     #detector.grab_frames_seconds()
-    detector.detect_controls()
+    #detector.detect_controls()
     #detector.test_gaze()
-    #detector.detect_fixation()
+    detector.detect_fixation()
