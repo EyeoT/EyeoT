@@ -6,6 +6,12 @@ import time
 # TODO: Choose bounding box not just by area but nearness to gaze
 
 
+class NoBoxError(Exception):
+
+    def __init__(self):
+        pass
+
+
 def crop_image(img_full):
     height, width, channels = img_full.shape
     # Crop is [y1:y2, x1:x2]
@@ -44,6 +50,7 @@ def find_bounding_box(img_binary, img_crop):
         img_binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     max_area = 0
+    max_rect = None
     switch_aspect_ratio = float(119) / 75  # Aspect ratio of the lightswitch
     for cnt in contours:
         rect = cv2.minAreaRect(cnt)
@@ -56,6 +63,9 @@ def find_bounding_box(img_binary, img_crop):
             if w * h > max_area:
                 max_area = w * h
                 max_rect = rect
+
+    if not max_rect:
+        raise NoBoxError
 
     box = cv2.boxPoints(max_rect)
     box = np.int0(box)
@@ -100,7 +110,7 @@ def find_bounding_box_simple(img_binary, img_crop):
         img_binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     max_area = 0
-    max_dim = []
+    max_dim = None
     switch_aspect_ratio = float(119) / 75  # Aspect ratio of the lightswitch
     for cnt in contours:
         x, y, w, h = cv2.boundingRect(cnt)
@@ -111,6 +121,9 @@ def find_bounding_box_simple(img_binary, img_crop):
             if w * h > max_area:
                 max_area = w * h
                 max_dim = [x, y, w, h]
+
+    if not max_dim:
+        raise NoBoxError
 
     x, y, w, h = max_dim
     cv2.rectangle(img_crop, (x, y), (x + w, y + h), (255, 0, 255), 2)
@@ -160,7 +173,11 @@ def get_box_color(img_full, gaze_data):
     kernel = np.ones((5, 5), np.uint8)
     img_binary = cv2.morphologyEx(img_binary, cv2.MORPH_OPEN, kernel)
 
-    img_lightbox_crop = find_bounding_box(img_binary, img_crop)
+    try:
+        img_lightbox_crop = find_bounding_box(img_binary, img_crop)
+    except NoBoxError:
+        print('no box found')
+        return None
 
     main_color = get_color(img_lightbox_crop)
 
@@ -171,5 +188,5 @@ def get_box_color(img_full, gaze_data):
 
 
 if __name__ == '__main__':
-    # get_box_color(frame_file, gaze_data)
-    print('stub')
+    frame = cv2.imread('frame0.jpeg')
+    get_box_color(frame, [])
