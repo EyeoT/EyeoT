@@ -129,19 +129,19 @@ class EventDetector:
         # TODO: Detection for controls
 
     def grab_bgr_frame(self):
+        self.reinit()
         self.sub.setsockopt(zmq.SUBSCRIBE, 'frame.world')
         raw_recv = self.sub.recv_multipart()
         while raw_recv[0] != 'frame.world':
             raw_recv = self.sub.recv_multipart()
         msg = loads(raw_recv[1])
-        if msg['format'] is not 'bgr':
+        if msg['format'] == 'bgr':
+            frame = np.frombuffer(raw_recv[2], dtype=np.uint8).reshape(720, 1280, 3)
+        else:
             file_name = 'frame.{0}'.format(msg['format'])
             frame_file = open(file_name, 'w')
             frame_file.write(raw_recv[2])
             frame = cv2.imread(file_name)
-        else:
-            frame = np.frombuffer(raw_recv[2], dtype=np.uint8).reshape(
-                msg['height'], msg['width'], msg['channels'])
         return frame
 
     def grab_frames(self, num_frames=1):
@@ -190,4 +190,6 @@ if __name__ == '__main__':
     except IOError:
         print('Pupil not connected, failure to create event detector')
         os._exit(1)
-    detector.detect_blink()
+    frame = detector.grab_bgr_frame()
+    cv2.imshow('word', frame)
+    cv2.waitKey(0)
