@@ -91,9 +91,11 @@ class EventDetector:
 
     def detect_controls(self):
         conf_tol = 0.9
-        start_detection = time.time()  # Time when the detection started
         reaction_ms = 200
         initial_x_pos = []
+        start_detection = time.time()  # Time when the detection started
+
+        # Take the mean of the x position for 200 miliseconds
         while ((time.time() - start_detection)*1000 < reaction_ms):
             raw_recv = self.sub.recv_multipart()
             if "gaze" in raw_recv[0]:
@@ -104,27 +106,48 @@ class EventDetector:
                         x_position = datum['norm_pos'][0]
                         initial_x_pos.append(x_position)
 
+        #TODO account for the case when no data has been appended to the initial_x_pos
+        #NOTE: sometimes there aren't any datapoints have more than a 90% confidence so the initial mean can't be calculated
         initial_mean = sum(initial_x_pos)/float(len(initial_x_pos))
+
+        # Initialize Kalmann filter with the calculated mean and for 1 dimension
         kf = KalmanFilter(initial_state_mean=initial_mean, n_dim_obs=1)
-        stay = True
+
+        # Calculate the difference the user's gaze needs to exceed on both the LHS and RHS
+        # NOTE: the percent_threshold needs to be played with
+        percent_threshold = 0.5
+        right_diff = percent_threshold * (1-initial_mean)
+        left_diff = percent_threshold * initial_mean
+
+        current_diff = 0
         count = 0
-        while stay:
+        while current_diff < right_diff:
             raw_recv = self.sub.recv_multipart()
             if "gaze" in raw_recv[0]:
                 msg = loads(raw_recv[1])
                 if msg['confidence'] > conf_tol:
                     base_data = msg['base_data']
-                    ipdb.set_trace()
+                    
+                    # If no points have been used in the Kalmann filter, then apply the filter to all of the x position data points
                     if count == 0:
+
                         x_positions = [datum['norm_pos'][0] for datum in base_data]
                         (filtered_state_means, filtered_state_covariances) = kf.filter(x_positions)
+
+                    # Otherwise, iterate through all of the "Base data" and update the Kalmann filter with each point and the most recent mean and covariance
                     else:
                         for datum in base_data:
                             (filtered_state_means, filtered_state_covariances) = kf.filter_update(filtered_state_means[-1], filtered_state_covariances[-1], datum['norm_pos'][0])
 
+                    # filtered_state_means[0] can either be a float or a Masked Array for some reason
+                    if type(filtered_state_means[0]).__name__ == "float64":
+                        current_mean = filtered_state_means[0]
+                    else:
+                        current_mean = filtered_state_means[0][0]
 
+                    # Take the diff between the current mean and the initial mean and increment the count
+                    current_diff = initial_mean - current_mean
                     count += 1
-
 
 
     def grab_frames(self, num_frames=1):
