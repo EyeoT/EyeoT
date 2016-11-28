@@ -3,6 +3,7 @@ import os
 
 from event_stub import EventDetector
 import audio
+import color_detection
 
 
 def initialize():
@@ -34,7 +35,9 @@ def detect_color_box(event_detector, color_queue):
         Then finds the lightbox and returns color
     """
     event_detector.detect_fixation()
-    event_detector.get_box_color(color_queue)
+    frame = event_detector.grab_bgr_frame()
+    color = color_detection.get_box_color(frame, [])
+    color_queue.put(color)
 
 
 def active(event_detector):
