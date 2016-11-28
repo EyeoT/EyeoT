@@ -2,7 +2,6 @@ import zmq
 from msgpack import loads
 import time
 import os
-from pykalman import KalmanFilter
 
 
 class EventDetector:
