@@ -68,6 +68,36 @@ class EventDetector:
                     else:
                         conf_queue.append(0)
 
+    def detect_fixation(self):
+        gaze_buffer_x = []
+        gaze_buffer_y = []
+        dispersion_thresh = .25
+        fixation_count = 0
+        fixations_timeout = 3
+        while fixation_count < 4:
+            raw_recv = self.sub.recv_multipart()
+            if 'gaze' in raw_recv[0]:
+                msg = loads(raw_recv[1])
+                if msg['confidence'] > .9:
+                    gaze_buffer_x.append(msg['base_data'][0]['norm_pos'][0])
+                    gaze_buffer_y.append(msg['base_data'][0]['norm_pos'][1])
+                    if len(gaze_buffer_x) > 120:
+                        gaze_buffer_x.pop(0)
+                        gaze_buffer_y.pop(0)
+
+                        dispersion = max(
+                            gaze_buffer_x) - min(gaze_buffer_x) + max(gaze_buffer_y) - min(gaze_buffer_y)
+                        if dispersion < dispersion_thresh:
+                            if fixation_count is 0:
+                                first_focus = time.time()
+                            elif time.time() - first_focus > fixations_timeout:
+                                fixation_count = 0
+                                first_focus = time.time()
+                            print('Focused {0}'.format(fixation_count))
+                            fixation_count += 1
+                            gaze_buffer_x = []
+                            gaze_buffer_y = []
+
     def detect_gaze(self, num_tries=3, queue=None):
         tries = 0
         while tries < num_tries:
@@ -208,3 +238,4 @@ if __name__ == '__main__':
     #detector.grab_frames_seconds()
     detector.detect_controls()
     #detector.test_gaze()
+    #detector.detect_fixation()
