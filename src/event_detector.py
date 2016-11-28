@@ -2,6 +2,8 @@ import zmq
 from msgpack import loads
 import time
 import os
+import cv2
+import numpy as np
 
 
 class EventDetector:
@@ -34,40 +36,61 @@ class EventDetector:
             print('Trouble with connection, is pupil connected?')
             raise IOError('Pupil not connected')
 
+    def reinit(self, addr='127.0.0.1', port='50020'):
+        """ Initializes the data stream from the pupil
+        """
+        self.context = zmq.Context()
+        self.req = self.context.socket(zmq.REQ)
+        self.req.RCVTIMEO = 1000  # milliseconds
+        self.req.connect('tcp://{0}:{1}'.format(addr, port))
+        # Ask for the subport
+        self.req.send('SUB_PORT')
+        sub_port = self.req.recv()
+        # Open a sub port to listen to the pupil
+        self.sub = self.context.socket(zmq.SUB)
+        self.sub.connect('tcp://{0}:{1}'.format(addr, sub_port))
+        self.sub.setsockopt(zmq.SUBSCRIBE, '')
+
     def detect_blink(self, seconds_to_wait=3):
         """ Detects when a blink happens for the specified number of seconds
         """
-        self.sub.setsockopt(zmq.SUBSCRIBE, 'pupil.')
+        self.reinit()
         stay = True
         # While we are still looking for the blink
         while stay:
             raw_recv = self.sub.recv_multipart()
-            msg = loads(raw_recv[1])
-            # When the confidence drops below .5, we assume the
-            # eyes are closed and a blink has begun
-            if msg['confidence'] < .5:
-                conf_queue = [0, 0, 0, 0, 0]  # Reset our confidence queue
-                start_blink = time.time()  # Time when the blink began
-                # While the blink has not lasted for specified time
-                while ((time.time() - start_blink) < seconds_to_wait):
-                    raw_recv = self.sub.recv_multipart()
-                    msg = loads(raw_recv[1])
-                    confidence = msg['confidence']
-                    stay = False
-                    conf_queue.pop(0)  # Take out first item
-                    # If confidence is high, add a 1 to queue
-                    if confidence > .2:
-                        conf_queue.append(1)
-                        # When sum of the queue exceeds 2 we determine eyes
-                        # have been opened and blink has ended
-                        if sum(conf_queue) > 2:
-                            stay = True
-                            break
-                    # If confidence is low, add a 0 to the queue
-                    else:
-                        conf_queue.append(0)
+            if 'pupil' in raw_recv[0]:
+                msg = loads(raw_recv[1])
+                # When the confidence drops below .5, we assume the
+                # eyes are closed and a blink has begun
+                if msg['confidence'] < .5:
+                    conf_queue = [0, 0, 0, 0, 0]  # Reset our confidence queue
+                    start_blink = time.time()  # Time when the blink began
+                    print start_blink
+                    # While the blink has not lasted for specified time
+                    while ((time.time() - start_blink) < seconds_to_wait):
+                        raw_recv = self.sub.recv_multipart()
+                        while 'pupil' not in raw_recv[0]:
+                            raw_recv = self.sub.recv_multipart()
+                        msg = loads(raw_recv[1])
+                        confidence = msg['confidence']
+                        stay = False
+                        conf_queue.pop(0)  # Take out first item
+                        # If confidence is high, add a 1 to queue
+                        if confidence > .2:
+                            conf_queue.append(1)
+                            # When sum of the queue exceeds 2 we determine eyes
+                            # have been opened and blink has ended
+                            if sum(conf_queue) > 3:
+                                stay = True
+                                break
+                        # If confidence is low, add a 0 to the queue
+                        else:
+                            conf_queue.append(0)
+        return
 
     def detect_fixation(self):
+        self.reinit()
         gaze_buffer_x = []
         gaze_buffer_y = []
         dispersion_thresh = .25
@@ -97,26 +120,6 @@ class EventDetector:
                             gaze_buffer_x = []
                             gaze_buffer_y = []
 
-    def detect_gaze(self, num_tries=3, queue=None):
-        tries = 0
-        while tries < num_tries:
-            color = self.get_box_color()
-            if color is not None:
-                if queue:
-                    queue.put(color)
-                return color
-        if queue:
-            queue.put(color)
-        return None
-
-    def get_box_color(self):
-        # TODO: ML project
-        stay = True
-        while stay:
-            raw_recv = self.sub.recv_multipart()
-            msg = loads(raw_recv[1])
-            print(msg)
-
     def detect_controls(self):
         stay = True
         while stay:
@@ -124,6 +127,22 @@ class EventDetector:
             msg = loads(raw_recv[1])
             print(msg)
         # TODO: Detection for controls
+
+    def grab_bgr_frame(self):
+        self.sub.setsockopt(zmq.SUBSCRIBE, 'frame.world')
+        raw_recv = self.sub.recv_multipart()
+        while raw_recv[0] != 'frame.world':
+            raw_recv = self.sub.recv_multipart()
+        msg = loads(raw_recv[1])
+        if msg['format'] is not 'bgr':
+            file_name = 'frame.{0}'.format(msg['format'])
+            frame_file = open(file_name, 'w')
+            frame_file.write(raw_recv[2])
+            frame = cv2.imread(file_name)
+        else:
+            frame = np.frombuffer(raw_recv[2], dtype=np.uint8).reshape(
+                msg['height'], msg['width'], msg['channels'])
+        return frame
 
     def grab_frames(self, num_frames=1):
         self.sub.setsockopt(zmq.SUBSCRIBE, 'frame.world')
@@ -171,4 +190,4 @@ if __name__ == '__main__':
     except IOError:
         print('Pupil not connected, failure to create event detector')
         os._exit(1)
-    detector.detect_fixation()
+    detector.detect_blink()

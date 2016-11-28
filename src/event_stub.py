@@ -1,5 +1,6 @@
 from time import sleep
 import random
+import cv2
 
 
 class EventDetector:
@@ -18,6 +19,9 @@ class EventDetector:
 
     def grab_frames(self, num_frames=1):
         print('Frame grabbed')
+
+    def grab_bgr_frame(self):
+        return cv2.imread('frame0.jpeg')
 
     def detect_gaze(self, num_tries=3, queue=None):
         tries = 0
@@ -47,3 +51,9 @@ class EventDetector:
     def detect_controls(self):
         print('Controls detection')
         return random.randint(0, 1)
+
+if __name__ == '__main__':
+    detector = EventDetector()
+    frame = detector.grab_bgr_frame()
+    import pdb
+    pdb.set_trace()

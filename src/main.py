@@ -1,18 +1,18 @@
 import multiprocessing
 import os
 
-from BLE_device_control import eyeot_device
-from event_stub import EventDetector
-
-
+from event_detector import EventDetector
 # import audio
+import color_detection
+from BLE_device_control import eyeot_device
 
 
 def initialize():
     """ Initialize creates all necessary objects for main
     """
     # TODO: start audio - thread?
-    authorized_devices = eyeot_device.search_for_authorized_eyeot_devices()  # find all EyeoT devices in range
+    # find all EyeoT devices in range
+    authorized_devices = eyeot_device.search_for_authorized_eyeot_devices()
 
     if len(authorized_devices) is 0:  # if no authorized devices are in range or powered on
         print("Error: No Authorized EyeoT devices found in range!")
@@ -22,7 +22,8 @@ def initialize():
     else:
         initialized_devices = list()
         for address in authorized_devices:  # for each valid EyeoT device
-            initialized_devices.append(eyeot_device.determine_device_type(address))  # initialize light or fan
+            initialized_devices.append(eyeot_device.determine_device_type(
+                address))  # initialize light or fan
         try:
             event_detector = EventDetector()
         except IOError as e:
@@ -47,14 +48,16 @@ def detect_color_box(event_detector, color_queue):
         Then finds the lightbox and returns color
     """
     event_detector.detect_fixation()
-    event_detector.get_box_color(color_queue)
+    frame = event_detector.grab_bgr_frame()
+    color = color_detection.get_box_color(frame, [])
+    color_queue.put(color)
 
 
 def active(event_detector):
     """ Process for active state
     """
     print('Active mode')
-    # audio.select_device()
+#   audio.select_device()
     color_queue = multiprocessing.Queue()
     blink_proc = multiprocessing.Process(
         target=event_detector.detect_blink, args=(3,))
@@ -114,7 +117,8 @@ if __name__ == "__main__":
                     break
 
         else:
-            print("Error: Problem initializing event_detector or finding an EyeoT device\n")
+            print(
+                "Error: Problem initializing event_detector or finding an EyeoT device\n")
 
     except IOError:
         print('Setup failed, quitting program')
