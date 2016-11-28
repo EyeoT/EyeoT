@@ -104,7 +104,6 @@ class EventDetector:
         return [x_fixation_pos, y_fixation_pos]
 
 
-        ipdb.set_trace()
 
     def detect_gaze(self, num_tries=3, queue=None):
         tries = 0
@@ -127,10 +126,19 @@ class EventDetector:
             print(msg)
 
     def detect_controls(self):
-        stay = True
-        while stay:
-            raw_recv = self.sub.recv_multipart()
-            msg = loads(raw_recv[1])
+        #TODO prompt user to look forward with audio
+        [x_forward, y_forward] = self.detect_fixation()
+
+        #TODO prompt user to look forward with audio
+        [x_choice, y_choice] = self.detect_fixation()
+
+        diff_threshold = 0.03
+        if (x_choice-x_forward) < diff_threshold:
+            return 0
+        elif (x_choice-x_forward) > 0:
+            return 1
+        elif (x_choice-x_forward) < 0:
+            return -1
 
     def grab_frames(self, num_frames=1):
         self.sub.setsockopt(zmq.SUBSCRIBE, 'frame.world')
@@ -191,4 +199,4 @@ if __name__ == '__main__':
     #detector.grab_frames_seconds()
     #detector.detect_controls()
     #detector.test_gaze()
-    detector.detect_fixation()
+    #detector.detect_fixation()
