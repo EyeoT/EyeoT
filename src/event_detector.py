@@ -92,66 +92,23 @@ class EventDetector:
         stay = True
         #while stay:
         #TODO Change this to 3 seconds
-        seconds_to_wait = 3
-        right_eye_sum = 0.0
-        left_eye_sum = 0.0
-        count = 0
-        conf_tol = 0.5
-        means = []
+        conf_tol = 0.9
         start_detection = time.time()  # Time when the detection started
-    #    while ((time.time() - start_detection) < seconds_to_wait):
-        while stay:
+        reaction_ms = 200
+        initial_x_pos = []
+        while ((time.time() - start_detection)*1000 < reaction_ms):
             raw_recv = self.sub.recv_multipart()
             if "gaze" in raw_recv[0]:
-              msg = loads(raw_recv[1])
-              if msg['confidence'] > conf_tol:
                 msg = loads(raw_recv[1])
-                base_data = msg['base_data']
-                for idx, datum in enumerate(base_data):
-                    x_pos = float(datum['norm_pos'][0])
-                    count += 1.0
+                if msg['confidence'] > conf_tol:
+                    base_data = msg['base_data']
+                    for datum in base_data:
+                        x_position = datum['norm_pos'][0]
+                        initial_x_pos.append(x_position)
 
-                    if idx % 2 == 0:
-                        right_eye_sum += x_pos
-                    elif idx % 2 == 1:
-                        right_eye_sum += x_pos
-                    
-                    if count == 8:
-                        right_mean = right_eye_sum / count
-                        left_mean = right_eye_sum / count
-                        means.append([left_mean, right_mean])
-                        right_eye_sum = 0.0
-                        left_eye_sum = 0.0
-                        count = 0
-
-            if len(means) > 30:
-                length = len(means)
-                len_diff = length - 30
-                tmp_means = means
-                means = tmp_means[len_diff:]
-
-            vote = 0
-            for idx, mean in enumerate(means):
-                left_diff = mean[0] - means[idx-1][0]
-                right_diff = mean[1] - means[idx-1][1]
-
-                if left_diff > 0 and right_diff > 0:
-                    vote += 1
-                elif left_diff > 0 and right_diff < 0:
-                    vote += 0
-                elif left_diff < 0 and right_diff > 0:
-                    vote += 0
-                elif left_diff < 0 and right_diff < 0:
-                    vote -= 1
-
-                
-                print float(vote/len(means))
-                    
-
-
-
-    #        print right_eye_deltas
-        # TODO: Detection for controls
+        #ipdb.set_trace()
+        initial_mean = sum(initial_x_pos)/len(initial_x_pos)
+        print initial_mean
 
     def grab_frames(self, num_frames=1):
         self.sub.setsockopt(zmq.SUBSCRIBE, 'frame.world')
@@ -210,5 +167,5 @@ if __name__ == '__main__':
         os._exit(1)
     #detector.grab_frames()
     #detector.grab_frames_seconds()
-    #detector.detect_controls()
-    detector.test_gaze()
+    detector.detect_controls()
+    #detector.test_gaze()
