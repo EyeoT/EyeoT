@@ -1,8 +1,8 @@
 import multiprocessing
 import os
 
-from event_stub import EventDetector
-import audio
+from event_detector import EventDetector
+# import audio
 import color_detection
 
 
@@ -44,7 +44,7 @@ def active(event_detector):
     """ Process for active state
     """
     print('Active mode')
-    audio.select_device()
+ #  audio.select_device()
     color_queue = multiprocessing.Queue()
     blink_proc = multiprocessing.Process(
         target=event_detector.detect_blink, args=(3,))
