@@ -12,6 +12,7 @@ class EventDetector:
         self.context = 'context'
 
     def detect_blink(self, seconds_to_wait=3):
+        sleep(random.random() * 5)
         sleep(seconds_to_wait)
         print('Blinked')
 
@@ -30,11 +31,18 @@ class EventDetector:
             queue.put(color)
         return None
 
-    def get_box_color(self):
+    def detect_fixation(self):
+        sleep(random.random() * 3)
+        print('Fixation')
+
+    def get_box_color(self, queue=None):
         sleep(random.random() * 5)
         print('Getting color')
         colors = ['blue', 'green', 'red', None]
-        return colors[random.randint(0, 3)]
+        color = colors[random.randint(0, 3)]
+        if queue:
+            queue.put(color)
+        return color
 
     def detect_controls(self):
         print('Controls detection')

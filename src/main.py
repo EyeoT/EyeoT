@@ -29,6 +29,14 @@ def idle(event_detector):
     return 'active'
 
 
+def detect_color_box(event_detector, color_queue):
+    """ Detects fixation
+        Then finds the lightbox and returns color
+    """
+    event_detector.detect_fixation()
+    event_detector.get_box_color(color_queue)
+
+
 def active(event_detector):
     """ Process for active state
     """
@@ -38,7 +46,7 @@ def active(event_detector):
     blink_proc = multiprocessing.Process(
         target=event_detector.detect_blink, args=(3,))
     box_proc = multiprocessing.Process(
-        target=event_detector.detect_gaze, args=(3, color_queue))
+        target=detect_color_box, args=(event_detector, color_queue))
     blink_proc.start()
     box_proc.start()
     while True:
