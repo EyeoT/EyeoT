@@ -2,6 +2,8 @@ import zmq
 from msgpack import loads
 import time
 import os
+import cv2
+import numpy as np
 
 
 class EventDetector:
@@ -97,26 +99,6 @@ class EventDetector:
                             gaze_buffer_x = []
                             gaze_buffer_y = []
 
-    def detect_gaze(self, num_tries=3, queue=None):
-        tries = 0
-        while tries < num_tries:
-            color = self.get_box_color()
-            if color is not None:
-                if queue:
-                    queue.put(color)
-                return color
-        if queue:
-            queue.put(color)
-        return None
-
-    def get_box_color(self):
-        # TODO: ML project
-        stay = True
-        while stay:
-            raw_recv = self.sub.recv_multipart()
-            msg = loads(raw_recv[1])
-            print(msg)
-
     def detect_controls(self):
         stay = True
         while stay:
@@ -124,6 +106,22 @@ class EventDetector:
             msg = loads(raw_recv[1])
             print(msg)
         # TODO: Detection for controls
+
+    def grab_bgr_frame(self):
+        self.sub.setsockopt(zmq.SUBSCRIBE, 'frame.world')
+        raw_recv = self.sub.recv_multipart()
+        while raw_recv[0] != 'frame.world':
+            raw_recv = self.sub.recv_multipart()
+        msg = loads(raw_recv[1])
+        if msg['format'] is not 'bgr':
+            file_name = 'frame.{0}'.format(msg['format'])
+            frame_file = open(file_name, 'w')
+            frame_file.write(raw_recv[2])
+            frame = cv2.imread(file_name)
+        else:
+            frame = np.frombuffer(raw_recv[2], dtype=np.uint8).reshape(
+                msg['height'], msg['width'], msg['channels'])
+        return frame
 
     def grab_frames(self, num_frames=1):
         self.sub.setsockopt(zmq.SUBSCRIBE, 'frame.world')
