@@ -12,6 +12,10 @@ ready = 7  # the Arduino has finished executing previous commands, send it new c
 command_ack = 8  # response acknowledgement from IoT device
 command_success = 9  # response from IoT device saying command executed successfully
 command_failure = 10  # response from IoT device saying command failed to be properly executed
+device_state_undef = 11  # device function state unknown (could be either on or off)
+device_state_on = 12  # device is on
+device_state_off = 13  # device is off
+
 
 # dict for printing verbose descriptions
 commands = {
@@ -29,4 +33,10 @@ responses = {
     command_ack: 'Command acknowledged by IoT device',
     command_success: 'Command successfully carried out by IoT device',
     command_failure: 'Command failed to be carried out by IoT device'
+}
+
+states = {
+    device_state_undef: 'Device state undefined',
+    device_state_on: 'Device state on',
+    device_state_off: 'Device state off'
 }
