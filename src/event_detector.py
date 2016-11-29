@@ -117,8 +117,12 @@ class EventDetector:
                                 first_focus = time.time()
                             print('Focused {0}'.format(fixation_count))
                             fixation_count += 1
-                            gaze_buffer_x = []
-                            gaze_buffer_y = []
+                            if fixation_count <= 3:
+                                gaze_buffer_x = []
+                                gaze_buffer_y = []
+        x_fixation_pos = sum(gaze_buffer_x)/float(len(gaze_buffer_x))
+        y_fixation_pos = sum(gaze_buffer_y)/float(len(gaze_buffer_y))
+        return [x_fixation_pos, y_fixation_pos]
 
     def detect_controls(self):
         stay = True
