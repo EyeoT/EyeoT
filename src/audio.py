@@ -1,5 +1,7 @@
 from os import path
 from playsound import playsound
+import sounddevice as sd
+import soundfile as sf
 
 AUDIO_PATH = '../audio/'
 
@@ -15,7 +17,13 @@ def system_off():
 
 
 def select_device():
-    playsound(path.join(AUDIO_PATH, 'select_device.mp3'))
+    data, fs = sf.read(path.join(AUDIO_PATH, 'Please try again.wav'), dtype='float32')
+    sd.play(data, fs, blocking=True)
+
+
+def try_again():
+    data, fs = sf.read(path.join(AUDIO_PATH, 'Please try again.wav'), dtype='float32')
+    sd.play(data, fs, blocking=True)
 
 
 def light_selected():
@@ -32,3 +40,7 @@ def binary_control():
 
 def incorrect_selection():
     playsound(path.join(AUDIO_PATH, 'incorrect_selection.mp3'))
+
+
+if __name__ == "__main__":
+    select_device()
