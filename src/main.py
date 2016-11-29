@@ -13,12 +13,12 @@ def initialize():
     # find all EyeoT devices in range
     authorized_devices = eyeot_device.search_for_authorized_eyeot_devices()
 
-    if len(authorized_devices) is 0:  # if no authorized devices are in range or powered on
-        print("Error: No Authorized EyeoT devices found in range!")
+   # if len(authorized_devices) is 0:  # if no authorized devices are in range or powered on
+    #    print("Error: No Authorized EyeoT devices found in range!")
         # TODO: Audio about no device in range, try again
-        return None, None
+     #   return None, None
 
-    else:
+    if True:
         initialized_devices = list()
         for address in authorized_devices:  # for each valid EyeoT device
             initialized_devices.append(eyeot_device.determine_device_type(
@@ -99,8 +99,10 @@ def all_systems_good():
 
 def start_state(state, event_detector):
     if state == 'idle':
+        audio.system_off()
         return idle(event_detector)
     elif state == 'active':
+        audio.system_on()
         return active(event_detector)
     elif state == 'control':
         return control(event_detector)
@@ -111,7 +113,8 @@ def start_state(state, event_detector):
 if __name__ == "__main__":
     try:
         event_detector, eyeot_devices = initialize()
-        if event_detector is not None and eyeot_devices is not None:
+#        if event_detector is not None and eyeot_devices is not None:
+        if True:
             next_state = 'idle'
             while True:
                 try:

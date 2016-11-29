@@ -26,8 +26,8 @@ def convert_to_binary_image(img_trans):
     # Define criteria, number of clusters(K) and apply kmeans()
     criteria = (cv2.TERM_CRITERIA_EPS, 10, 1.0)
     K = 2
-    ret, label, center = cv2.kmeans(
-        Z, K, None, criteria, 10, cv2.KMEANS_PP_CENTERS)
+    flags = cv2.KMEANS_PP_CENTERS
+    ret, label, center = cv2.kmeans(Z, K, None, criteria, 10, flags)
 
     # Find larger label and color it black
     if np.count_nonzero(label) > len(label) / 2:

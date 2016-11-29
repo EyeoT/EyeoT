@@ -95,12 +95,12 @@ class EventDetector:
         gaze_buffer_y = []
         dispersion_thresh = .25
         fixation_count = 0
-        fixations_timeout = 3
-        while fixation_count < 4:
+        fixations_timeout = 5
+        while fixation_count < 3:
             raw_recv = self.sub.recv_multipart()
             if 'gaze' in raw_recv[0]:
                 msg = loads(raw_recv[1])
-                if msg['confidence'] > .9:
+                if msg['confidence'] > .8:
                     gaze_buffer_x.append(msg['base_data'][0]['norm_pos'][0])
                     gaze_buffer_y.append(msg['base_data'][0]['norm_pos'][1])
                     if len(gaze_buffer_x) > 120:
