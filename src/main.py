@@ -2,7 +2,7 @@ import multiprocessing
 import os
 
 from event_detector import EventDetector
-# import audio
+import audio
 import color_detection
 from BLE_device_control import eyeot_device
 
@@ -10,7 +10,6 @@ from BLE_device_control import eyeot_device
 def initialize():
     """ Initialize creates all necessary objects for main
     """
-    # TODO: start audio - thread?
     # find all EyeoT devices in range
     authorized_devices = eyeot_device.search_for_authorized_eyeot_devices()
 
@@ -35,6 +34,7 @@ def initialize():
 def idle(event_detector):
     """ Processes for idle state
     """
+    print('Idle state')
     blink_proc = multiprocessing.Process(
         target=event_detector.detect_blink, args=(3,))
     blink_proc.start()
@@ -47,9 +47,11 @@ def detect_color_box(event_detector, color_queue):
     """ Detects fixation
         Then finds the lightbox and returns color
     """
+    # TODO: light up all boxes
     event_detector.detect_fixation()
     frame = event_detector.grab_bgr_frame()
     color = color_detection.get_box_color(frame, [])
+    # TODO: Get device from color
     color_queue.put(color)
 
 
@@ -81,7 +83,9 @@ def control(event_detector):
     """ Processes for control state
     """
     print('control mode')
+    # TODO: Get controls from device
     control = event_detector.detect_controls()
+    # TODO: Send device controls
     print(control)
     return 'active'
 
