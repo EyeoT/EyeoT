@@ -37,7 +37,7 @@ class EyeoTDevice(object):
         print("Sent '{0}' command\n".format(ble_consts.commands[command]))
 
     def receive_response(self):
-        response = int(self.req.read_by_handle(arduino.response_handle)[0].encode('hex')) / 100
+        response = int(self.req.read_by_handle(arduino.response_handle)[0].encode('hex')[:2], 16)
         print("Response '{0}' received!\n".format(ble_consts.responses[response]))
         return response
 
@@ -46,10 +46,13 @@ class BinaryStateDevice(EyeoTDevice):
     def __init__(self, address, name):
         EyeoTDevice.__init__(self, address)
         self.device_name = name
-        # self.device_state = self.read_state()
+        self.connect()
+        self.device_state = self.read_state()
+        self.disconnect()
 
     def read_state(self):
-        state = self.req.read_by_handle(arduino.state_handle[0].encode('hex')) / 100
+        state = int(self.req.read_by_handle(arduino.state_handle)[0].encode('hex')[:2], 16)
+        print ("Device functional state '{0}' received!\n".format(ble_consts.states[state]))
         return state
 
     def turn_on(self):
