@@ -17,8 +17,7 @@ def system_off():
 
 
 def select_device():
-    #TODO
-    data, fs = sf.read(path.join(AUDIO_PATH, 'Please try again.wav'), dtype='float32')
+    data, fs = sf.read(path.join(AUDIO_PATH, 'Select Device.wav'), dtype='float32')
     sd.play(data, fs, blocking=True)
 
 
