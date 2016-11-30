@@ -105,8 +105,10 @@ def control(event_detector, commands):
     """ Processes for control state
     """
     print('control mode')
-    # TODO: No color found
     color = commands['color']
+    if color is None:
+        # TODO: Audio for no device found
+        return 'active', {}
     device = commands['color_dict'][color]
     print(device)
     audio.light_selected()
@@ -128,17 +130,16 @@ def control(event_detector, commands):
             control_proc.terminate()
             print('blink first')
             return 'active', {}
-    # TODO: Send device controls
-    if control == 1:
+    if control == 1: # User looked right
         device.connect()
         device.turn_on() # command right
         device.disconnect()
-    elif control == -1:
+    elif control == -1: # User looked left
         device.connect()
         device.turn_off()  # command left
         device.disconnect()
-    elif control == 0:
-        pass  # no command
+    elif control == 0: # User looked straight ahead
+        return 'control', commands
     print(control)
     return 'active', {}
 
