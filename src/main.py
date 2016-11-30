@@ -97,7 +97,7 @@ def active(event_detector, eyeot_devices):
 
 
 def control_detection(event_detector, control_queue):
-    control = event_detector.detect_controls()
+    control = event_detector.detect_controls(8)
     control_queue.put(control)
 
 
@@ -109,6 +109,7 @@ def control(event_detector, commands):
     color = commands['color']
     device = commands['color_dict'][color]
     print(device)
+    audio.light_selected()
     # TODO: Audio for device and controls
     control_queue = multiprocessing.Queue()
     blink_proc = multiprocessing.Process(
@@ -128,6 +129,16 @@ def control(event_detector, commands):
             print('blink first')
             return 'active', {}
     # TODO: Send device controls
+    if control == 1:
+        device.connect()
+        device.turn_on() # command right
+        device.disconnect()
+    elif control == -1:
+        device.connect()
+        device.turn_off()  # command left
+        device.disconnect()
+    elif control == 0:
+        pass  # no command
     print(control)
     return 'active', {}
 
