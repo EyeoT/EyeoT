@@ -4,7 +4,6 @@ import time
 import os
 import cv2
 import numpy as np
-import random
 
 
 class EventDetector:
@@ -125,12 +124,12 @@ class EventDetector:
         y_fixation_pos = sum(gaze_buffer_y)/float(len(gaze_buffer_y))
         return [x_fixation_pos, y_fixation_pos]
 
-    def detect_controls(self, timeout=4):
+    def detect_controls(self, timeout=5):
         self.reinit()
         start_time = time.time()
         pos_buffer = []
         left_tol = .3
-        right_tol = .8
+        right_tol = .7
         buffer_len = 20
         while time.time() - start_time < timeout:
             raw_recv = self.sub.recv_multipart()
