@@ -12,11 +12,36 @@ class NoBoxError(Exception):
         pass
 
 
-def crop_image(img_full):
+def crop_image(img_full, gaze_data):
     height, width, channels = img_full.shape
+    crop_to = .25 # Crop to a fourth of the image
+    try:
+        x_gaze, y_gaze = gaze_data
+    except:
+        x_gaze = .5
+        y_gaze = .5
+
+    x1 = x_gaze - crop_to/2
+    x2 = x_gaze + crop_to/2
+    if x1  < 0:
+        x1 = 0
+        x2 = crop_to
+    elif x2 > 1:
+        x1 = 1 - crop_to
+        x2 = 1
+
+    y1 = y_gaze - crop_to/2
+    y2 = y_gaze + crop_to/2
+    if y1 < 0:
+        y1 = 0
+        y2 = crop_to
+    elif y2 > 1:
+        y1 = 1 - crop_to
+        y2 = 1
+
     # Crop is [y1:y2, x1:x2]
-    img_crop = img_full[int(height * .25):height,
-                        int(width * .25):int(width * .75)]
+    img_crop = img_full[int(height * y1):int(height * y2),
+                        int(width * x1):int(width * x2)]
     return img_crop
 
 
@@ -163,7 +188,7 @@ def get_box_color(img_full, gaze_data):
     # Passing in the frame as a numpy array so it doesn't need to be loaded
     # img_full = cv2.imread(frame_file)
 
-    img_crop = crop_image(img_full)
+    img_crop = crop_image(img_full, gaze_data)
 
     # Transform into CIELab colorspace
     img_trans = cv2.cvtColor(img_crop, cv2.COLOR_BGR2LAB)
