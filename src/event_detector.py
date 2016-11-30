@@ -102,8 +102,8 @@ class EventDetector:
             if 'gaze' in raw_recv[0]:
                 msg = loads(raw_recv[1])
                 if msg['confidence'] > .8:
-                    gaze_buffer_x.append(msg['base_data'][0]['norm_pos'][0])
-                    gaze_buffer_y.append(msg['base_data'][0]['norm_pos'][1])
+                    gaze_buffer_x.append(msg['norm_pos'][0])
+                    gaze_buffer_y.append(msg['norm_pos'][1])
                     if len(gaze_buffer_x) > 120:
                         gaze_buffer_x.pop(0)
                         gaze_buffer_y.pop(0)
@@ -125,9 +125,31 @@ class EventDetector:
         y_fixation_pos = sum(gaze_buffer_y)/float(len(gaze_buffer_y))
         return [x_fixation_pos, y_fixation_pos]
 
-    def detect_controls(self):
-        print('Controls detection')
-        return random.randint(-1, 1)
+    def detect_controls(self, timeout=4):
+        self.reinit()
+        start_time = time.time()
+        pos_buffer = []
+        left_tol = .3
+        right_tol = .8
+        buffer_len = 20
+        while time.time() - start_time < timeout:
+            raw_recv = self.sub.recv_multipart()
+            if 'gaze' in raw_recv[0]:
+                msg = loads(raw_recv[1])
+                if msg['confidence'] > .8:
+                    pos_buffer.append(msg['norm_pos'][0])
+                    if len(pos_buffer) > buffer_len:
+                        pos_buffer.pop(0)
+                        avg_pos = sum(pos_buffer)/buffer_len
+                        if avg_pos < left_tol:
+                            print('left')
+                            return -1
+                        if avg_pos > right_tol:
+                            print('right')
+                            return 1
+        print('straight')
+        return 0
+
 
     def grab_bgr_frame(self):
         self.reinit()
@@ -191,6 +213,4 @@ if __name__ == '__main__':
     except IOError:
         print('Pupil not connected, failure to create event detector')
         os._exit(1)
-    frame = detector.grab_bgr_frame()
-    cv2.imshow('word', frame)
-    cv2.waitKey(0)
+    detector.detect_controls()
