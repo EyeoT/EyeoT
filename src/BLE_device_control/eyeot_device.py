@@ -17,19 +17,20 @@ class EyeoTDevice(object):
 
     def __init__(self, address):
         self.address = address
-        self.req = GATTRequester(address, True)  # initialize req and connect
-        self.response = self.receive_response()  # initialize with current response
-        self.disconnect()
+        self.response = "Undefined"
         self.device_state = "Undefined"
+        self.req = "Undefined"
 
     def connect(self):
         print("Connecting...\n")
-        self.req.connect(True)
+        self.req = GATTRequester(self.address, True)  # initialize req and connect
         print("Connection Successful! \n")
 
     def disconnect(self):
         print("Disconnecting...\n")
         self.req.disconnect()
+        del self.req
+        self.req = "Undefined"
         print("Disconnection Successful! \n")
 
     def send_command(self, command):
@@ -47,6 +48,7 @@ class BinaryStateDevice(EyeoTDevice):
         EyeoTDevice.__init__(self, address)
         self.device_name = name
         self.connect()
+        self.response = self.receive_response()
         self.device_state = self.read_state()
         self.disconnect()
 
