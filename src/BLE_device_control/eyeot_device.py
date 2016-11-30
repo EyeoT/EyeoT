@@ -3,6 +3,7 @@ from bluetooth.ble import DiscoveryService, GATTRequester
 import arduino
 import ble_consts
 import pc
+from time import sleep
 
 
 class EyeoTDevice(object):
@@ -25,6 +26,7 @@ class EyeoTDevice(object):
         print("Connecting...\n")
         self.req = GATTRequester(self.address, True)  # initialize req and connect
         print("Connection Successful! \n")
+        sleep(0.5)
 
     def disconnect(self):
         print("Disconnecting...\n")
