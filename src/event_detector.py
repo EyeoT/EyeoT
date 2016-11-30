@@ -4,6 +4,7 @@ import time
 import os
 import cv2
 import numpy as np
+import random
 
 
 class EventDetector:
@@ -89,14 +90,14 @@ class EventDetector:
                             conf_queue.append(0)
         return
 
-    def detect_fixation(self):
+    def detect_fixation(self, times_to_run=3):
         self.reinit()
         gaze_buffer_x = []
         gaze_buffer_y = []
         dispersion_thresh = .25
         fixation_count = 0
         fixations_timeout = 5
-        while fixation_count < 3:
+        while fixation_count < times_to_run:
             raw_recv = self.sub.recv_multipart()
             if 'gaze' in raw_recv[0]:
                 msg = loads(raw_recv[1])
@@ -117,7 +118,7 @@ class EventDetector:
                                 first_focus = time.time()
                             print('Focused {0}'.format(fixation_count))
                             fixation_count += 1
-                            if fixation_count <= 3:
+                            if fixation_count <= times_to_run-1:
                                 gaze_buffer_x = []
                                 gaze_buffer_y = []
         x_fixation_pos = sum(gaze_buffer_x)/float(len(gaze_buffer_x))
@@ -125,12 +126,8 @@ class EventDetector:
         return [x_fixation_pos, y_fixation_pos]
 
     def detect_controls(self):
-        stay = True
-        while stay:
-            raw_recv = self.sub.recv_multipart()
-            msg = loads(raw_recv[1])
-            print(msg)
-        # TODO: Detection for controls
+        print('Controls detection')
+        return random.randint(-1, 1)
 
     def grab_bgr_frame(self):
         self.reinit()
