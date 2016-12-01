@@ -1,8 +1,7 @@
-import multiprocessing
 import os
 import time
 
-from event_detector import EventDetector
+from event_detector2 import EventDetector
 import audio
 import color_detection
 from BLE_device_control import eyeot_device, ble_consts
@@ -36,11 +35,7 @@ def idle(event_detector):
     """ Processes for idle state
     """
     print('Idle state')
-    # event_detector.detect_blink(3)
-    blink_proc = multiprocessing.Process(
-        target=event_detector.detect_blink, args=(3,))
-    blink_proc.start()
-    blink_proc.join()
+    event_detector.detect_blink(3)
     print('Blink Detected')
     return 'active', {}
 
@@ -52,59 +47,38 @@ def light_all_eyeot_devices(eyeot_devices):
     for i in range(int(len(eyeot_devices))):  # for all devices
         eyeot_devices[i].connect()
         time.sleep(1)
-        print ble_consts.commands[i + offset]
+        print(ble_consts.commands[i + offset])
         eyeot_devices[i].send_command(i + offset)
         eyeot_devices[i].disconnect()
         color_to_device[device_color[i]] = eyeot_devices[i]
     return color_to_device
 
 
-def detect_color_box(event_detector, color_queue):
-    """ Detects fixation
-        Then finds the lightbox and returns color
-    """
-    fixation = event_detector.detect_fixation()
-    frame = event_detector.grab_bgr_frame()
-    color = color_detection.get_box_color(frame, fixation)
-    color_queue.put(color)
-
-
 def active(event_detector, eyeot_devices):
     """ Process for active state
     """
-    print('Active mode')
-#   audio.select_device()
-    color_to_device = light_all_eyeot_devices(eyeot_devices)
-    color_queue = multiprocessing.Queue()
-    blink_proc = multiprocessing.Process(
-        target=event_detector.detect_blink, args=(3,))
-    box_proc = multiprocessing.Process(
-        target=detect_color_box, args=(event_detector, color_queue))
-    blink_proc.start()
-    box_proc.start()
-    while True:
-        if not box_proc.is_alive():
-            blink_proc.terminate()
-            print('box first')
-            color = color_queue.get()
-            print(color)
-            commands = {'color': color, 'color_dict': color_to_device}
-            return 'control', commands
-        if not blink_proc.is_alive():
-            box_proc.terminate()
+    color = None
+    while color is None:
+        print('Active mode')
+    #   audio.select_device()
+        color_to_device = light_all_eyeot_devices(eyeot_devices)
+        detection = event_detector.detect_fixation()
+        if detection[0] == 'blink':
             print('blink first')
             return 'idle', {}
-
-
-def control_detection(event_detector, control_queue):
-    control = event_detector.detect_controls(8)
-    control_queue.put(control)
+        print('box first')
+        fixation = detection[1]
+        frame = event_detector.grab_bgr_frame()
+        color = color_detection.get_box_color(frame, fixation)
+    commands = {'color': color, 'color_dict': color_to_device}
+    return 'control', commands
 
 
 def control(event_detector, commands):
     """ Processes for control state
     """
     print('control mode')
+    time.sleep(3)
     color = commands['color']
     if color is None:
         # TODO: Audio for no device found
@@ -113,35 +87,27 @@ def control(event_detector, commands):
     print(device)
     audio.light_selected()
     # TODO: Audio for device and controls
-    control_queue = multiprocessing.Queue()
-    blink_proc = multiprocessing.Process(
-        target=event_detector.detect_blink, args=(3,))
-    control_proc = multiprocessing.Process(
-        target=control_detection, args=(event_detector, control_queue))
-    blink_proc.start()
-    control_proc.start()
-    while True:
-        if not control_proc.is_alive():
-            blink_proc.terminate()
-            print('control first')
-            control = control_queue.get()
-            break
-        if not blink_proc.is_alive():
-            control_proc.terminate()
-            print('blink first')
-            return 'active', {}
-    if control == 1: # User looked right
+    detection = event_detector.detect_controls()
+    if detection[0] == 'blink':
+        return 'active', {}
+    control = detection[1]
+    if control == 1:  # User looked right
         device.connect()
-        device.turn_on() # command right
+        device.turn_on()  # command right
+        print("Turning device on")
         device.disconnect()
-    elif control == -1: # User looked left
+    elif control == -1:  # User looked left
         device.connect()
         device.turn_off()  # command left
+        print("Turning device off")
         device.disconnect()
-    elif control == 0: # User looked straight ahead
+    elif control == 0:  # User looked straight ahead
+        print("Looked straight")
         return 'control', commands
     print(control)
-    return 'active', {}
+    print("Returning to Idle")
+    time.sleep(5)
+    return 'idle', {}
 
 
 def all_systems_good():
@@ -180,7 +146,8 @@ if __name__ == "__main__":
             commands = {}
             while True:
                 try:
-                    next_state, commands = start_state(next_state, event_detector, eyeot_devices, commands)
+                    next_state, commands = start_state(
+                        next_state, event_detector, eyeot_devices, commands)
                 except ValueError as e:
                     print('Bad state given: {0}'.format(e))
                     break
