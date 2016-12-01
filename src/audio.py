@@ -53,6 +53,7 @@ def turn_light_off():
     data = np.concatenate((data, data2, data3, data4, data5))
     sd.play(data, fs, blocking=True)
 
+
 def turn_fan_on():
     data, fs = sf.read(path.join(AUDIO_PATH, 'To Turn The.wav'), dtype='float32')
     data2, fs = sf.read(path.join(AUDIO_PATH, 'Fan.wav'), dtype='float32')
@@ -61,6 +62,7 @@ def turn_fan_on():
     data5, fs = sf.read(path.join(AUDIO_PATH, 'Right.wav'), dtype='float32')
     data = np.concatenate((data, data2, data3, data4, data5))
     sd.play(data, fs, blocking=True)
+
 
 def turn_fan_off():
     data, fs = sf.read(path.join(AUDIO_PATH, 'To Turn The.wav'), dtype='float32')
@@ -105,6 +107,10 @@ def not_authenticated():
     data, fs = sf.read(path.join(AUDIO_PATH, 'No Authenticated.wav'), dtype='float32')
     data2, fs = sf.read(path.join(AUDIO_PATH, 'Please try again.wav'), dtype='float32')
     data = np.concatenate((data, data2))
+    sd.play(data, fs, blocking=True)
+
+def pip():
+    data, fs = sf.read(path.join(AUDIO_PATH, 'Pip.wav'), dtype='float32')
     sd.play(data, fs, blocking=True)
 
 
