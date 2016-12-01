@@ -151,5 +151,18 @@ def device_instructions(device, state):
             turn_fan_on()
 
 
+def device_instructions_no_state(device):
+    if device == 'light':
+        light_selected()
+        incorrect_selection()
+        turn_light_off()
+        turn_light_on()
+    elif device == 'fan':
+        fan_selected()
+        incorrect_selection()
+        turn_fan_off()
+        turn_fan_on()
+
+
 if __name__ == "__main__":
     device_instructions('fan', 12)
