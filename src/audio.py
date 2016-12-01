@@ -34,6 +34,44 @@ def system_sleeping():
     sd.play(data, fs, blocking=True)
 
 
+def turn_light_on():
+    data, fs = sf.read(path.join(AUDIO_PATH, 'To Turn The.wav'), dtype='float32')
+    data2, fs = sf.read(path.join(AUDIO_PATH, 'Light.wav'), dtype='float32')
+    data3, fs = sf.read(path.join(AUDIO_PATH, 'On.wav'), dtype='float32')
+    data4, fs = sf.read(path.join(AUDIO_PATH, 'Look.wav'), dtype='float32')
+    data5, fs = sf.read(path.join(AUDIO_PATH, 'Right.wav'), dtype='float32')
+    data = np.concatenate((data, data2, data3, data4, data5))
+    sd.play(data, fs, blocking=True)
+
+
+def turn_light_off():
+    data, fs = sf.read(path.join(AUDIO_PATH, 'To Turn The.wav'), dtype='float32')
+    data2, fs = sf.read(path.join(AUDIO_PATH, 'Light.wav'), dtype='float32')
+    data3, fs = sf.read(path.join(AUDIO_PATH, 'Off.wav'), dtype='float32')
+    data4, fs = sf.read(path.join(AUDIO_PATH, 'Look.wav'), dtype='float32')
+    data5, fs = sf.read(path.join(AUDIO_PATH, 'Left.wav'), dtype='float32')
+    data = np.concatenate((data, data2, data3, data4, data5))
+    sd.play(data, fs, blocking=True)
+
+def turn_fan_on():
+    data, fs = sf.read(path.join(AUDIO_PATH, 'To Turn The.wav'), dtype='float32')
+    data2, fs = sf.read(path.join(AUDIO_PATH, 'Fan.wav'), dtype='float32')
+    data3, fs = sf.read(path.join(AUDIO_PATH, 'On.wav'), dtype='float32')
+    data4, fs = sf.read(path.join(AUDIO_PATH, 'Look.wav'), dtype='float32')
+    data5, fs = sf.read(path.join(AUDIO_PATH, 'Right.wav'), dtype='float32')
+    data = np.concatenate((data, data2, data3, data4, data5))
+    sd.play(data, fs, blocking=True)
+
+def turn_fan_off():
+    data, fs = sf.read(path.join(AUDIO_PATH, 'To Turn The.wav'), dtype='float32')
+    data2, fs = sf.read(path.join(AUDIO_PATH, 'Fan.wav'), dtype='float32')
+    data3, fs = sf.read(path.join(AUDIO_PATH, 'Off.wav'), dtype='float32')
+    data4, fs = sf.read(path.join(AUDIO_PATH, 'Look.wav'), dtype='float32')
+    data5, fs = sf.read(path.join(AUDIO_PATH, 'Left.wav'), dtype='float32')
+    data = np.concatenate((data, data2, data3, data4, data5))
+    sd.play(data, fs, blocking=True)
+
+
 def select_device():
     data, fs = sf.read(path.join(AUDIO_PATH, 'Select Device.wav'), dtype='float32')
     sd.play(data, fs, blocking=True)
