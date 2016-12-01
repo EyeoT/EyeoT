@@ -20,6 +20,13 @@ def system_off():
     sd.play(data, fs, blocking=True)
 
 
+def system_waking():
+    data, fs = sf.read(path.join(AUDIO_PATH, 'System.wav'), dtype='float32')
+    data2, fs = sf.read(path.join(AUDIO_PATH, 'Waking.wav'), dtype='float32')
+    data = np.concatenate((data, data2))
+    sd.play(data, fs, blocking=True)
+
+
 def select_device():
     data, fs = sf.read(path.join(AUDIO_PATH, 'Select Device.wav'), dtype='float32')
     sd.play(data, fs, blocking=True)
@@ -47,6 +54,7 @@ def fan_selected():
 def incorrect_selection():
     data, fs = sf.read(path.join(AUDIO_PATH, 'If Incorrect.wav'), dtype='float32')
     sd.play(data, fs, blocking=True)
+
 
 def not_authenticated():
     data, fs = sf.read(path.join(AUDIO_PATH, 'No Authenticated.wav'), dtype='float32')
