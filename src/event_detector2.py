@@ -162,15 +162,19 @@ class EventDetector:
                     print(start_blink)
                     in_blink = True
 
-    def detect_controls(self, timeout=5):
-        self.reinit()
-        start_time = time.time()
+    def detect_controls(self, blink_length=3):
+        # Initialize Variables
         pos_buffer = []
         left_tol = .3
         right_tol = .7
         buffer_len = 20
-        while time.time() - start_time < timeout:
+        in_blink = False
+        start_blink = 0
+        conf_queue = [0, 0, 0, 0, 0]
+        while True:
             raw_recv = self.sub.recv_multipart()
+
+            # Detect Controls
             if 'gaze' in raw_recv[0]:
                 msg = loads(raw_recv[1])
                 if msg['confidence'] > .8:
@@ -180,12 +184,41 @@ class EventDetector:
                         avg_pos = sum(pos_buffer) / buffer_len
                         if avg_pos < left_tol:
                             print('left')
-                            return -1
+                            return ['control', -1]
                         if avg_pos > right_tol:
                             print('right')
-                            return 1
-        print('straight')
-        return 0
+                            return ['control', 1]
+
+            # Long Blink Detection
+            elif 'pupil' in raw_recv[0]:
+                msg = loads(raw_recv[1])
+                if in_blink:
+                    # While the blink has not lasted for specified time
+                    raw_recv = self.sub.recv_multipart()
+                    while 'pupil' not in raw_recv[0]:
+                        raw_recv = self.sub.recv_multipart()
+                    msg = loads(raw_recv[1])
+                    confidence = msg['confidence']
+                    conf_queue.pop(0)  # Take out first item
+                    # If confidence is high, add a 1 to queue
+                    if confidence > .2:
+                        conf_queue.append(1)
+                        # When sum of the queue exceeds 2 we determine eyes
+                        # have been opened and blink has ended
+                        if sum(conf_queue) > 3:
+                            in_blink = False
+                    # If confidence is low, add a 0 to the queue
+                    else:
+                        conf_queue.append(0)
+                        if time.time() - start_blink() > blink_length:
+                            return ['blink']
+                # When the confidence drops below .2, we assume the
+                # eyes are closed and a blink has begun
+                elif msg['confidence'] < .2:
+                    conf_queue = [0, 0, 0, 0, 0]  # Reset our confidence queue
+                    start_blink = time.time()  # Time when the blink began
+                    print(start_blink)
+                    in_blink = True
 
     def grab_bgr_frame(self):
         self.reinit()
