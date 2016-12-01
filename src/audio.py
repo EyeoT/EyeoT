@@ -27,6 +27,13 @@ def system_waking():
     sd.play(data, fs, blocking=True)
 
 
+def system_sleeping():
+    data, fs = sf.read(path.join(AUDIO_PATH, 'System.wav'), dtype='float32')
+    data2, fs = sf.read(path.join(AUDIO_PATH, 'Sleeping.wav'), dtype='float32')
+    data = np.concatenate((data, data2))
+    sd.play(data, fs, blocking=True)
+
+
 def select_device():
     data, fs = sf.read(path.join(AUDIO_PATH, 'Select Device.wav'), dtype='float32')
     sd.play(data, fs, blocking=True)
