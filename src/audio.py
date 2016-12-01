@@ -114,5 +114,15 @@ def pip():
     sd.play(data, fs, blocking=True)
 
 
+def power_on():
+    data, fs = sf.read(path.join(AUDIO_PATH, 'Power On.wav'), dtype='float32')
+    sd.play(data, fs, blocking=True)
+
+
+def power_off():
+    data, fs = sf.read(path.join(AUDIO_PATH, 'Power Off.wav'), dtype='float32')
+    sd.play(data, fs, blocking=True)
+
+
 if __name__ == "__main__":
     light_selected()
