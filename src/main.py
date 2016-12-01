@@ -2,7 +2,7 @@ import multiprocessing
 import os
 import time
 
-from event_detector import EventDetector
+from event_detector2 import EventDetector
 import audio
 import color_detection
 from BLE_device_control import eyeot_device, ble_consts
