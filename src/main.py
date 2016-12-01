@@ -15,7 +15,7 @@ def initialize():
 
     if len(authorized_devices) is 0:  # if no authorized devices are in range or powered on
         print("Error: No Authorized EyeoT devices found in range!")
-        # TODO: Audio about no device in range, try again
+        audio.not_authenticated()
         return None, None
 
     if True:
@@ -60,7 +60,7 @@ def active(event_detector, eyeot_devices):
     color = None
     while color is None:
         print('Active mode')
-    #   audio.select_device()
+        audio.select_device()
         color_to_device = light_all_eyeot_devices(eyeot_devices)
         detection = event_detector.detect_fixation()
         if detection[0] == 'blink':
@@ -81,7 +81,7 @@ def control(event_detector, commands):
     time.sleep(3)
     color = commands['color']
     if color is None:
-        # TODO: Audio for no device found
+        audio.try_again()
         return 'active', {}
     device = commands['color_dict'][color]
     print(device)
