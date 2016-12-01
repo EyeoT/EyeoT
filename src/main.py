@@ -1,4 +1,3 @@
-import multiprocessing
 import os
 import time
 
@@ -36,11 +35,7 @@ def idle(event_detector):
     """ Processes for idle state
     """
     print('Idle state')
-    # event_detector.detect_blink(3)
-    blink_proc = multiprocessing.Process(
-        target=event_detector.detect_blink, args=(3,))
-    blink_proc.start()
-    blink_proc.join()
+    event_detector.detect_blink(3)
     print('Blink Detected')
     return 'active', {}
 
@@ -77,11 +72,6 @@ def active(event_detector, eyeot_devices):
     return 'control', commands
 
 
-def control_detection(event_detector, control_queue):
-    control = event_detector.detect_controls(8)
-    control_queue.put(control)
-
-
 def control(event_detector, commands):
     """ Processes for control state
     """
@@ -94,23 +84,10 @@ def control(event_detector, commands):
     print(device)
     audio.light_selected()
     # TODO: Audio for device and controls
-    control_queue = multiprocessing.Queue()
-    blink_proc = multiprocessing.Process(
-        target=event_detector.detect_blink, args=(3,))
-    control_proc = multiprocessing.Process(
-        target=control_detection, args=(event_detector, control_queue))
-    blink_proc.start()
-    control_proc.start()
-    while True:
-        if not control_proc.is_alive():
-            blink_proc.terminate()
-            print('control first')
-            control = control_queue.get()
-            break
-        if not blink_proc.is_alive():
-            control_proc.terminate()
-            print('blink first')
-            return 'active', {}
+    detection = event_detector.detect_controls()
+    if detection[0] == 'blink':
+        return 'active', {}
+    control = detection[1]
     if control == 1:  # User looked right
         device.connect()
         device.turn_on()  # command right
