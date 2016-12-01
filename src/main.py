@@ -102,10 +102,10 @@ def control(event_detector, commands):
         print("Turning device off")
         device.disconnect()
     elif control == 0:  # User looked straight ahead
-        print("Looked straight")
+        print "Looked Straight, didn't send command yet"
         return 'control', commands
     print(control)
-    print("Returning to Idle")
+    print "Returning to idle because command was successful"
     time.sleep(5)
     return 'idle', {}
 
@@ -134,14 +134,6 @@ if __name__ == "__main__":
     try:
         event_detector, eyeot_devices = initialize()
         if event_detector is not None and eyeot_devices is not None:
-            eyeot_devices[0].connect()
-            eyeot_devices[0].send_command(ble_consts.red_light)
-            time.sleep(1)
-            eyeot_devices[0].send_command(ble_consts.green_light)
-            time.sleep(1)
-            eyeot_devices[0].send_command(ble_consts.blue_light)
-            time.sleep(1)
-            eyeot_devices[0].disconnect()
             next_state = 'idle'
             commands = {}
             while True:
