@@ -57,17 +57,19 @@ def light_all_eyeot_devices(eyeot_devices):
 def active(event_detector, eyeot_devices):
     """ Process for active state
     """
-    print('Active mode')
-#   audio.select_device()
-    color_to_device = light_all_eyeot_devices(eyeot_devices)
-    detection = event_detector.detect_fixation()
-    if detection[0] == 'blink':
-        print('blink first')
-        return 'idle', {}
-    print('box first')
-    fixation = detection[1]
-    frame = event_detector.grab_bgr_frame()
-    color = color_detection.get_box_color(frame, fixation)
+    color = None
+    while color is None:
+        print('Active mode')
+    #   audio.select_device()
+        color_to_device = light_all_eyeot_devices(eyeot_devices)
+        detection = event_detector.detect_fixation()
+        if detection[0] == 'blink':
+            print('blink first')
+            return 'idle', {}
+        print('box first')
+        fixation = detection[1]
+        frame = event_detector.grab_bgr_frame()
+        color = color_detection.get_box_color(frame, fixation)
     commands = {'color': color, 'color_dict': color_to_device}
     return 'control', commands
 
@@ -76,6 +78,7 @@ def control(event_detector, commands):
     """ Processes for control state
     """
     print('control mode')
+    time.sleep(3)
     color = commands['color']
     if color is None:
         # TODO: Audio for no device found
@@ -91,15 +94,20 @@ def control(event_detector, commands):
     if control == 1:  # User looked right
         device.connect()
         device.turn_on()  # command right
+        print("Turning device on")
         device.disconnect()
     elif control == -1:  # User looked left
         device.connect()
         device.turn_off()  # command left
+        print("Turning device off")
         device.disconnect()
     elif control == 0:  # User looked straight ahead
+        print("Looked straight")
         return 'control', commands
     print(control)
-    return 'active', {}
+    print("Returning to Idle")
+    time.sleep(5)
+    return 'idle', {}
 
 
 def all_systems_good():

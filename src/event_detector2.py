@@ -136,14 +136,13 @@ class EventDetector:
                     # If confidence is low, add a 0 to the queue
                     else:
                         conf_queue.append(0)
-                        if time.time() - start_blink() > blink_length:
+                        if (time.time() - start_blink()) > blink_length:
                             return ['blink']
                 # When the confidence drops below .2, we assume the
                 # eyes are closed and a blink has begun
                 elif msg['confidence'] < .2:
                     conf_queue = [0, 0, 0, 0, 0]  # Reset our confidence queue
                     start_blink = time.time()  # Time when the blink began
-                    print(start_blink)
                     in_blink = True
 
     def detect_controls(self, blink_length=3):
@@ -194,14 +193,13 @@ class EventDetector:
                     # If confidence is low, add a 0 to the queue
                     else:
                         conf_queue.append(0)
-                        if time.time() - start_blink() > blink_length:
+                        if (time.time() - start_blink()) > blink_length:
                             return ['blink']
                 # When the confidence drops below .2, we assume the
                 # eyes are closed and a blink has begun
                 elif msg['confidence'] < .2:
                     conf_queue = [0, 0, 0, 0, 0]  # Reset our confidence queue
                     start_blink = time.time()  # Time when the blink began
-                    print(start_blink)
                     in_blink = True
 
     def grab_bgr_frame(self):
