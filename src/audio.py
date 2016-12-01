@@ -14,7 +14,9 @@ def system_on():
 
 
 def system_off():
-    data, fs = sf.read(path.join(AUDIO_PATH, 'Off.wav'), dtype='float32')
+    data, fs = sf.read(path.join(AUDIO_PATH, 'System.wav'), dtype='float32')
+    data2, fs = sf.read(path.join(AUDIO_PATH, 'Off.wav'), dtype='float32')
+    data = np.concatenate((data, data2))
     sd.play(data, fs, blocking=True)
 
 
