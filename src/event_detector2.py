@@ -36,25 +36,9 @@ class EventDetector:
             print('Trouble with connection, is pupil connected?')
             raise IOError('Pupil not connected')
 
-    def reinit(self, addr='127.0.0.1', port='50020'):
-        """ Initializes the data stream from the pupil
-        """
-        self.context = zmq.Context()
-        self.req = self.context.socket(zmq.REQ)
-        self.req.RCVTIMEO = 1000  # milliseconds
-        self.req.connect('tcp://{0}:{1}'.format(addr, port))
-        # Ask for the subport
-        self.req.send('SUB_PORT')
-        sub_port = self.req.recv()
-        # Open a sub port to listen to the pupil
-        self.sub = self.context.socket(zmq.SUB)
-        self.sub.connect('tcp://{0}:{1}'.format(addr, sub_port))
-        self.sub.setsockopt(zmq.SUBSCRIBE, '')
-
     def detect_blink(self, seconds_to_wait=3):
         """ Detects when a blink happens for the specified number of seconds
         """
-        self.reinit()
         stay = True
         # While we are still looking for the blink
         while stay:
@@ -221,7 +205,6 @@ class EventDetector:
                     in_blink = True
 
     def grab_bgr_frame(self):
-        self.reinit()
         self.sub.setsockopt(zmq.SUBSCRIBE, 'frame.world')
         raw_recv = self.sub.recv_multipart()
         while raw_recv[0] != 'frame.world':
