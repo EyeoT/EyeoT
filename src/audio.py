@@ -124,5 +124,33 @@ def power_off():
     sd.play(data, fs, blocking=True)
 
 
+def fan_on():
+    data, fs = sf.read(path.join(AUDIO_PATH, 'Fan.wav'), dtype='float32')
+    data2, fs = sf.read(path.join(AUDIO_PATH, 'On.wav'), dtype='float32')
+    data = np.concatenate((data, data2))
+    sd.play(data, fs, blocking=True)
+
+
+def fan_off():
+    data, fs = sf.read(path.join(AUDIO_PATH, 'Fan.wav'), dtype='float32')
+    data2, fs = sf.read(path.join(AUDIO_PATH, 'Off.wav'), dtype='float32')
+    data = np.concatenate((data, data2))
+    sd.play(data, fs, blocking=True)
+
+
+def light_on():
+    data, fs = sf.read(path.join(AUDIO_PATH, 'Light.wav'), dtype='float32')
+    data2, fs = sf.read(path.join(AUDIO_PATH, 'On.wav'), dtype='float32')
+    data = np.concatenate((data, data2))
+    sd.play(data, fs, blocking=True)
+
+
+def light_off():
+    data, fs = sf.read(path.join(AUDIO_PATH, 'Light.wav'), dtype='float32')
+    data2, fs = sf.read(path.join(AUDIO_PATH, 'Off.wav'), dtype='float32')
+    data = np.concatenate((data, data2))
+    sd.play(data, fs, blocking=True)
+
+
 if __name__ == "__main__":
     light_selected()
