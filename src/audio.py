@@ -7,7 +7,9 @@ AUDIO_PATH = '../audio/'
 
 
 def system_on():
-    data, fs = sf.read(path.join(AUDIO_PATH, 'On.wav'), dtype='float32')
+    data, fs = sf.read(path.join(AUDIO_PATH, 'System.wav'), dtype='float32')
+    data2, fs = sf.read(path.join(AUDIO_PATH, 'On.wav'), dtype='float32')
+    data = np.concatenate((data, data2))
     sd.play(data, fs, blocking=True)
 
 
@@ -42,6 +44,12 @@ def fan_selected():
 
 def incorrect_selection():
     data, fs = sf.read(path.join(AUDIO_PATH, 'If Incorrect.wav'), dtype='float32')
+    sd.play(data, fs, blocking=True)
+
+def not_authenticated():
+    data, fs = sf.read(path.join(AUDIO_PATH, 'No Authenticated.wav'), dtype='float32')
+    data2, fs = sf.read(path.join(AUDIO_PATH, 'Please try again.wav'), dtype='float32')
+    data = np.concatenate((data, data2))
     sd.play(data, fs, blocking=True)
 
 
