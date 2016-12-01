@@ -136,7 +136,7 @@ class EventDetector:
                     # If confidence is low, add a 0 to the queue
                     else:
                         conf_queue.append(0)
-                        if (time.time() - start_blink()) > blink_length:
+                        if (time.time() - start_blink) > blink_length:
                             return ['blink']
                 # When the confidence drops below .2, we assume the
                 # eyes are closed and a blink has begun
@@ -193,7 +193,7 @@ class EventDetector:
                     # If confidence is low, add a 0 to the queue
                     else:
                         conf_queue.append(0)
-                        if (time.time() - start_blink()) > blink_length:
+                        if (time.time() - start_blink) > blink_length:
                             return ['blink']
                 # When the confidence drops below .2, we assume the
                 # eyes are closed and a blink has begun
