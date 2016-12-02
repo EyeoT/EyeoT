@@ -26,7 +26,6 @@ class EyeoTDevice(object):
         print("Connecting...\n")
         self.req = GATTRequester(self.address, True)  # initialize req and connect
         print("Connection Successful! \n")
-        sleep(0.5)
 
     def disconnect(self):
         print("Disconnecting...\n")
@@ -50,9 +49,9 @@ class BinaryStateDevice(EyeoTDevice):
         EyeoTDevice.__init__(self, address)
         self.device_name = name
         self.connect()
-        self.response = self.receive_response()
-        self.device_state = self.read_state()
-        self.disconnect()
+        #self.response = self.receive_response()
+        self.device_state = ble_consts.states[self.read_state()]
+        #self.disconnect()
 
     def read_state(self):
         state = int(self.req.read_by_handle(arduino.state_handle)[0].encode('hex')[:2], 16)
