@@ -44,7 +44,7 @@ def turn_light_on():
     data5, fs = sf.read(path.join(AUDIO_PATH, 'Right.wav'), dtype='float32')
     data = np.concatenate((data, data2, data3, data4, data5))
     sd.play(data, fs, blocking=True)
-    time.sleep(2)
+    time.sleep(1)
     pip()
 
 
@@ -57,7 +57,7 @@ def turn_light_off():
     data5, fs = sf.read(path.join(AUDIO_PATH, 'Left.wav'), dtype='float32')
     data = np.concatenate((data, data2, data3, data4, data5))
     sd.play(data, fs, blocking=True)
-    time.sleep(2)
+    time.sleep(1)
     pip()
 
 
@@ -70,7 +70,7 @@ def turn_fan_on():
     data5, fs = sf.read(path.join(AUDIO_PATH, 'Right.wav'), dtype='float32')
     data = np.concatenate((data, data2, data3, data4, data5))
     sd.play(data, fs, blocking=True)
-    time.sleep(2)
+    time.sleep(1)
     pip()
 
 
@@ -83,7 +83,7 @@ def turn_fan_off():
     data5, fs = sf.read(path.join(AUDIO_PATH, 'Left.wav'), dtype='float32')
     data = np.concatenate((data, data2, data3, data4, data5))
     sd.play(data, fs, blocking=True)
-    time.sleep(2)
+    time.sleep(1)
     pip()
 
 
