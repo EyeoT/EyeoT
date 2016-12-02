@@ -35,7 +35,8 @@ def system_sleeping():
 
 
 def turn_light_on():
-    data, fs = sf.read(path.join(AUDIO_PATH, 'To Turn The.wav'), dtype='float32')
+    data, fs = sf.read(
+        path.join(AUDIO_PATH, 'To Turn The.wav'), dtype='float32')
     data2, fs = sf.read(path.join(AUDIO_PATH, 'Light.wav'), dtype='float32')
     data3, fs = sf.read(path.join(AUDIO_PATH, 'On.wav'), dtype='float32')
     data4, fs = sf.read(path.join(AUDIO_PATH, 'Look.wav'), dtype='float32')
@@ -45,7 +46,8 @@ def turn_light_on():
 
 
 def turn_light_off():
-    data, fs = sf.read(path.join(AUDIO_PATH, 'To Turn The.wav'), dtype='float32')
+    data, fs = sf.read(
+        path.join(AUDIO_PATH, 'To Turn The.wav'), dtype='float32')
     data2, fs = sf.read(path.join(AUDIO_PATH, 'Light.wav'), dtype='float32')
     data3, fs = sf.read(path.join(AUDIO_PATH, 'Off.wav'), dtype='float32')
     data4, fs = sf.read(path.join(AUDIO_PATH, 'Look.wav'), dtype='float32')
@@ -55,7 +57,8 @@ def turn_light_off():
 
 
 def turn_fan_on():
-    data, fs = sf.read(path.join(AUDIO_PATH, 'To Turn The.wav'), dtype='float32')
+    data, fs = sf.read(
+        path.join(AUDIO_PATH, 'To Turn The.wav'), dtype='float32')
     data2, fs = sf.read(path.join(AUDIO_PATH, 'Fan.wav'), dtype='float32')
     data3, fs = sf.read(path.join(AUDIO_PATH, 'On.wav'), dtype='float32')
     data4, fs = sf.read(path.join(AUDIO_PATH, 'Look.wav'), dtype='float32')
@@ -65,7 +68,8 @@ def turn_fan_on():
 
 
 def turn_fan_off():
-    data, fs = sf.read(path.join(AUDIO_PATH, 'To Turn The.wav'), dtype='float32')
+    data, fs = sf.read(
+        path.join(AUDIO_PATH, 'To Turn The.wav'), dtype='float32')
     data2, fs = sf.read(path.join(AUDIO_PATH, 'Fan.wav'), dtype='float32')
     data3, fs = sf.read(path.join(AUDIO_PATH, 'Off.wav'), dtype='float32')
     data4, fs = sf.read(path.join(AUDIO_PATH, 'Look.wav'), dtype='float32')
@@ -75,12 +79,14 @@ def turn_fan_off():
 
 
 def select_device():
-    data, fs = sf.read(path.join(AUDIO_PATH, 'Select Device.wav'), dtype='float32')
+    data, fs = sf.read(
+        path.join(AUDIO_PATH, 'Select Device.wav'), dtype='float32')
     sd.play(data, fs, blocking=True)
 
 
 def try_again():
-    data, fs = sf.read(path.join(AUDIO_PATH, 'Please try again.wav'), dtype='float32')
+    data, fs = sf.read(
+        path.join(AUDIO_PATH, 'Please try again.wav'), dtype='float32')
     sd.play(data, fs, blocking=True)
 
 
@@ -99,15 +105,19 @@ def fan_selected():
 
 
 def incorrect_selection():
-    data, fs = sf.read(path.join(AUDIO_PATH, 'If Incorrect.wav'), dtype='float32')
+    data, fs = sf.read(
+        path.join(AUDIO_PATH, 'If Incorrect.wav'), dtype='float32')
     sd.play(data, fs, blocking=True)
 
 
 def not_authenticated():
-    data, fs = sf.read(path.join(AUDIO_PATH, 'No Authenticated.wav'), dtype='float32')
-    data2, fs = sf.read(path.join(AUDIO_PATH, 'Please try again.wav'), dtype='float32')
+    data, fs = sf.read(
+        path.join(AUDIO_PATH, 'No Authenticated.wav'), dtype='float32')
+    data2, fs = sf.read(
+        path.join(AUDIO_PATH, 'Please try again.wav'), dtype='float32')
     data = np.concatenate((data, data2))
     sd.play(data, fs, blocking=True)
+
 
 def pip():
     data, fs = sf.read(path.join(AUDIO_PATH, 'Pip.wav'), dtype='float32')
@@ -152,5 +162,35 @@ def light_off():
     sd.play(data, fs, blocking=True)
 
 
+def device_instructions(device, state):
+    if device == 'light':
+        light_selected()
+        incorrect_selection()
+        if state == 12:  # Device is on
+            turn_light_off()
+        else:
+            turn_light_on()
+    elif device == 'fan':
+        fan_selected()
+        incorrect_selection()
+        if state == 12:  # Device is on
+            turn_fan_off()
+        else:
+            turn_fan_on()
+
+
+def device_instructions_no_state(device):
+    if device == 'light':
+        light_selected()
+        incorrect_selection()
+        turn_light_off()
+        turn_light_on()
+    elif device == 'fan':
+        fan_selected()
+        incorrect_selection()
+        turn_fan_off()
+        turn_fan_on()
+
+
 if __name__ == "__main__":
-    light_selected()
+    device_instructions('fan', 12)
