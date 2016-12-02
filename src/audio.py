@@ -168,15 +168,21 @@ def device_instructions(device, state):
         incorrect_selection()
         if state == 'Device state on':  # Device is on
             turn_light_off()
+        elif state == 'Device state off':
+            turn_light_on()
         else:
             turn_light_on()
+            turn_light_off()
     elif device == 'fan':
         fan_selected()
         incorrect_selection()
         if state == 'Device state on':  # Device is on
             turn_fan_off()
+        elif state == 'Device state off':
+            turn_fan_on()
         else:
             turn_fan_on()
+            turn_fan_off()
 
 
 def device_instructions_no_state(device):
