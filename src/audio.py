@@ -2,7 +2,6 @@ from os import path
 import numpy as np
 import sounddevice as sd
 import soundfile as sf
-import time
 
 AUDIO_PATH = '../audio/'
 
@@ -44,8 +43,6 @@ def turn_light_on():
     data5, fs = sf.read(path.join(AUDIO_PATH, 'Right.wav'), dtype='float32')
     data = np.concatenate((data, data2, data3, data4, data5))
     sd.play(data, fs, blocking=True)
-    time.sleep(1)
-    pip()
 
 
 def turn_light_off():
@@ -57,8 +54,6 @@ def turn_light_off():
     data5, fs = sf.read(path.join(AUDIO_PATH, 'Left.wav'), dtype='float32')
     data = np.concatenate((data, data2, data3, data4, data5))
     sd.play(data, fs, blocking=True)
-    time.sleep(1)
-    pip()
 
 
 def turn_fan_on():
@@ -70,8 +65,6 @@ def turn_fan_on():
     data5, fs = sf.read(path.join(AUDIO_PATH, 'Right.wav'), dtype='float32')
     data = np.concatenate((data, data2, data3, data4, data5))
     sd.play(data, fs, blocking=True)
-    time.sleep(1)
-    pip()
 
 
 def turn_fan_off():
@@ -83,8 +76,6 @@ def turn_fan_off():
     data5, fs = sf.read(path.join(AUDIO_PATH, 'Left.wav'), dtype='float32')
     data = np.concatenate((data, data2, data3, data4, data5))
     sd.play(data, fs, blocking=True)
-    time.sleep(1)
-    pip()
 
 
 def select_device():
@@ -177,15 +168,23 @@ def device_instructions(device, state):
         incorrect_selection()
         if state == 'Device state on':  # Device is on
             turn_light_off()
+            time.sleep(1)
+            pip()
         else:
             turn_light_on()
+            time.sleep(1)
+            pip()
     elif device == 'fan':
         fan_selected()
         incorrect_selection()
         if state == 'Device state on':  # Device is on
             turn_fan_off()
+            time.sleep(1)
+            pip()
         else:
             turn_fan_on()
+            time.sleep(1)
+            pip()
 
 
 def device_instructions_no_state(device):
@@ -194,11 +193,15 @@ def device_instructions_no_state(device):
         incorrect_selection()
         turn_light_off()
         turn_light_on()
+        time.sleep(1)
+        pip()
     elif device == 'fan':
         fan_selected()
         incorrect_selection()
         turn_fan_off()
         turn_fan_on()
+        time.sleep(1)
+        pip()
 
 
 if __name__ == "__main__":
