@@ -184,6 +184,9 @@ def device_instructions(device, state):
             turn_fan_on()
             turn_fan_off()
 
+    time.sleep(1)
+    pip()
+
 
 def device_instructions_no_state(device):
     if device == 'light':
@@ -196,6 +199,9 @@ def device_instructions_no_state(device):
         incorrect_selection()
         turn_fan_off()
         turn_fan_on()
+
+    time.sleep(1)
+    pip()
 
 
 if __name__ == "__main__":
