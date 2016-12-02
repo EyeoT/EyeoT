@@ -168,23 +168,18 @@ def device_instructions(device, state):
         incorrect_selection()
         if state == 'Device state on':  # Device is on
             turn_light_off()
-            time.sleep(1)
-            pip()
         else:
             turn_light_on()
-            time.sleep(1)
-            pip()
     elif device == 'fan':
         fan_selected()
         incorrect_selection()
         if state == 'Device state on':  # Device is on
             turn_fan_off()
-            time.sleep(1)
-            pip()
         else:
             turn_fan_on()
-            time.sleep(1)
-            pip()
+
+    time.sleep(1)
+    pip()
 
 
 def device_instructions_no_state(device):
@@ -193,15 +188,14 @@ def device_instructions_no_state(device):
         incorrect_selection()
         turn_light_off()
         turn_light_on()
-        time.sleep(1)
-        pip()
     elif device == 'fan':
         fan_selected()
         incorrect_selection()
         turn_fan_off()
         turn_fan_on()
-        time.sleep(1)
-        pip()
+
+    time.sleep(1)
+    pip()
 
 
 if __name__ == "__main__":
