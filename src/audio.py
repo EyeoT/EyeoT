@@ -134,18 +134,46 @@ def power_off():
     sd.play(data, fs, blocking=True)
 
 
+def fan_on():
+    data, fs = sf.read(path.join(AUDIO_PATH, 'Fan.wav'), dtype='float32')
+    data2, fs = sf.read(path.join(AUDIO_PATH, 'On.wav'), dtype='float32')
+    data = np.concatenate((data, data2))
+    sd.play(data, fs, blocking=True)
+
+
+def fan_off():
+    data, fs = sf.read(path.join(AUDIO_PATH, 'Fan.wav'), dtype='float32')
+    data2, fs = sf.read(path.join(AUDIO_PATH, 'Off.wav'), dtype='float32')
+    data = np.concatenate((data, data2))
+    sd.play(data, fs, blocking=True)
+
+
+def light_on():
+    data, fs = sf.read(path.join(AUDIO_PATH, 'Light.wav'), dtype='float32')
+    data2, fs = sf.read(path.join(AUDIO_PATH, 'On.wav'), dtype='float32')
+    data = np.concatenate((data, data2))
+    sd.play(data, fs, blocking=True)
+
+
+def light_off():
+    data, fs = sf.read(path.join(AUDIO_PATH, 'Light.wav'), dtype='float32')
+    data2, fs = sf.read(path.join(AUDIO_PATH, 'Off.wav'), dtype='float32')
+    data = np.concatenate((data, data2))
+    sd.play(data, fs, blocking=True)
+
+
 def device_instructions(device, state):
     if device == 'light':
         light_selected()
         incorrect_selection()
-        if state == 12:  # Device is on
+        if state == 'on':  # Device is on
             turn_light_off()
         else:
             turn_light_on()
     elif device == 'fan':
         fan_selected()
         incorrect_selection()
-        if state == 12:  # Device is on
+        if state == 'on':  # Device is on
             turn_fan_off()
         else:
             turn_fan_on()
