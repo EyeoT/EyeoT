@@ -35,7 +35,7 @@ def idle(event_detector):
     """ Processes for idle state
     """
     print('Idle state')
-    event_detector.detect_blink(3)
+    event_detector.detect_blink(2.25)
     print('Blink Detected')
     return 'active', {}
 
@@ -45,11 +45,8 @@ def light_all_eyeot_devices(eyeot_devices):
     offset = 2
     device_color = ["green", "blue"]
     for i in range(int(len(eyeot_devices))):  # for all devices
-        eyeot_devices[i].connect()
-        time.sleep(1)
         print(ble_consts.commands[i + offset])
         eyeot_devices[i].send_command(i + offset)
-        eyeot_devices[i].disconnect()
         color_to_device[device_color[i]] = eyeot_devices[i]
     return color_to_device
 
@@ -70,6 +67,8 @@ def active(event_detector, eyeot_devices):
         fixation = detection[1]
         frame = event_detector.grab_bgr_frame()
         color = color_detection.get_box_color(frame, fixation)
+        if color == 'red':
+            color = None
     commands = {'color': color, 'color_dict': color_to_device}
     return 'control', commands
 
@@ -85,22 +84,17 @@ def control(event_detector, commands):
         return 'active', {}
     device = commands['color_dict'][color]
     print(device)
-    audio.light_selected()
-    # TODO: Audio for device and controls
+    audio.device_instructions(device.device_name, device.device_state)
     detection = event_detector.detect_controls()
     if detection[0] == 'blink':
         return 'active', {}
     control = detection[1]
     if control == 1:  # User looked right
-        device.connect()
         device.turn_on()  # command right
         print("Turning device on")
-        device.disconnect()
     elif control == -1:  # User looked left
-        device.connect()
         device.turn_off()  # command left
         print("Turning device off")
-        device.disconnect()
     elif control == 0:  # User looked straight ahead
         print "Looked Straight, didn't send command yet"
         return 'control', commands
@@ -119,10 +113,11 @@ def all_systems_good():
 
 def start_state(state, event_detector, eyeot_devices, commands):
     if state == 'idle':
-        audio.system_off()
+        audio.system_sleeping()
+        time.sleep(2)
         return idle(event_detector)
     elif state == 'active':
-        audio.system_on()
+        audio.system_waking()
         return active(event_detector, eyeot_devices)
     elif state == 'control':
         return control(event_detector, commands)
@@ -134,6 +129,7 @@ if __name__ == "__main__":
     try:
         event_detector, eyeot_devices = initialize()
         if event_detector is not None and eyeot_devices is not None:
+            audio.power_on()
             next_state = 'idle'
             commands = {}
             while True:
@@ -142,6 +138,9 @@ if __name__ == "__main__":
                         next_state, event_detector, eyeot_devices, commands)
                 except ValueError as e:
                     print('Bad state given: {0}'.format(e))
+                    break
+                except RuntimeError as e:
+                    print(e)
                     break
 
         else:
