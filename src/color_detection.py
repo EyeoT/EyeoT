@@ -30,29 +30,30 @@ def read_data(folder_path):
 
 def crop_image(img_full, gaze_data):
     height, width, channels = img_full.shape
-    crop_to = .25  # Crop to a fourth of the image
+    crop_to_x = .25  # Crop to a fourth of the image
+    crop_to_y = .5
     try:
         x_gaze, y_gaze = gaze_data
     except:
         x_gaze = .5
         y_gaze = .5
 
-    x1 = x_gaze - crop_to / 2
-    x2 = x_gaze + crop_to / 2
+    x1 = x_gaze - crop_to_x / 2
+    x2 = x_gaze + crop_to_x / 2
     if x1 < 0:
         x1 = 0
-        x2 = crop_to
+        x2 = crop_to_x
     elif x2 > 1:
-        x1 = 1 - crop_to
+        x1 = 1 - crop_to_x
         x2 = 1
 
-    y1 = y_gaze - crop_to / 2
-    y2 = y_gaze + crop_to / 2
+    y1 = y_gaze - crop_to_y / 2
+    y2 = y_gaze + crop_to_y / 2
     if y1 < 0:
         y1 = 0
-        y2 = crop_to
+        y2 = crop_to_y
     elif y2 > 1:
-        y1 = 1 - crop_to
+        y1 = 1 - crop_to_y
         y2 = 1
 
     y1 = 1 - y1
@@ -208,47 +209,49 @@ def get_box_color(img_full, gaze_data):
     # Passing in the frame as a numpy array so it doesn't need to be loaded
     # img_full = cv2.imread(frame_file)
 
-#    cv2.imshow('full', img_full)
+    cv2.imshow('full', img_full)
     img_crop = crop_image(img_full, gaze_data)
-#    cv2.imshow('crop', img_crop)
+    cv2.imshow('crop', img_crop)
 #    cv2.imwrite('crop.jpeg', img_crop)
 
     # Transform into CIELab colorspace
     img_trans = cv2.cvtColor(img_crop, cv2.COLOR_BGR2LAB)
-#    cv2.imshow('trans', img_trans)
+    cv2.imshow('trans', img_trans)
 #    cv2.imwrite('color_trans.jpeg', img_trans)
 
     img_binary = convert_to_binary_image(img_trans)
-#    cv2.imshow('binary', img_binary)
+    cv2.imshow('binary', img_binary)
 #    cv2.imwrite('binary.jpeg', img_binary)
 
     kernel = np.ones((5, 5), np.uint8)
     img_binary = cv2.morphologyEx(img_binary, cv2.MORPH_OPEN, kernel)
-#    cv2.imshow('binary cleaned', img_binary)
+    cv2.imshow('binary cleaned', img_binary)
 #    cv2.imwrite('binary_cleaned.jpeg', img_binary)
 
     try:
         img_lightbox_crop = find_bounding_box(img_binary, img_crop)
     except NoBoxError:
         print('no box found')
-#        cv2.waitKey(0)
+        cv2.waitKey(0)
         return None
 
-#    cv2.imshow('lightbox crop', img_lightbox_crop)
+    cv2.imshow('lightbox crop', img_lightbox_crop)
 #    cv2.imwrite('lightbox_crop.jpeg', img_lightbox_crop)
     main_color = get_color(img_lightbox_crop)
 
     time_taken = time.time() - start_time
     print(time_taken)
-#    cv2.waitKey(0)
+    cv2.waitKey(0)
 
     return main_color
 
 
 if __name__ == '__main__':
-    file_path = '../MLGazeImages'
+    """    file_path = '../MLGazeImages'
     frame_sets = read_data(file_path)
     frame_set = frame_sets[4]
     print(frame_set)
     img = cv2.imread(os.path.join(file_path, frame_set['frame']))
-    get_box_color(img, frame_set['gaze_data'])
+    get_box_color(img, frame_set['gaze_data'])"""
+    img = cv2.imread('frame.jpeg')
+    get_box_color(img, (0.4464, 0.8407))
